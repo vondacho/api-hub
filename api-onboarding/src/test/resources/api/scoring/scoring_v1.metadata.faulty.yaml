@@ -1,0 +1,21 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIMetadata
+metadata:
+  name: API Scoring - Scoring
+  version: v1
+  labels:
+    domain: API Onboarding
+    status: GA
+    team: me
+operations:
+  'POST /scorings':
+    dispatcher: JSON_BODY
+    dispatcherRules: |-
+      {
+        "exp": "/source",
+        "operator": "regexp",
+        "cases": {
+          "^.*valid.*$": "valid-candidate",
+          "default": "invalid-candidate-not-found-uri"
+        }
+      }

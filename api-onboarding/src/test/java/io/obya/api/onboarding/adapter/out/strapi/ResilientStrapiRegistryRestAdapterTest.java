@@ -8,6 +8,7 @@ import io.obya.api.onboarding.domain.model.Specification;
 import io.obya.api.onboarding.domain.model.SpecificationId;
 import io.obya.api.onboarding.domain.model.Version;
 import io.obya.common.util.Try;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,14 +30,15 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * Strapi is replaced by a Microcks server so the tests remain self-contained
  * while still validating the HTTP contract with the registry.
  */
-@Disabled
+@Disabled("Still have to be designed")
+@Slf4j
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class ResilientStrapiRegistryRestAdapterTest {
 
     @Container
-    static MicrocksContainer strapiContainer =
-            new MicrocksContainer("quay.io/microcks/microcks-uber:latest")
-                    .withDebugLogLevel();
+    static MicrocksContainer strapiContainer = new MicrocksContainer(
+            DockerImageName.parse("quay.io/microcks/microcks-uber:latest"))
+                .withDebugLogLevel();
 
     @Autowired
     ResilientStrapiRegistryRestAdapter registry;
@@ -43,38 +46,42 @@ class ResilientStrapiRegistryRestAdapterTest {
     @BeforeAll
     static void importSpecification() throws MicrocksException, IOException {
         strapiContainer.start();
-        strapiContainer.importAsMainArtifact(
-                new File("target/classes/api/strapi/strapi_specification_v1.json"));
+        strapiContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
+                new File("target/test-classes/api/strapi/resolved.specification_v1.openapi.yaml"));
+        strapiContainer.importAsSecondaryArtifact(
+                new File("target/test-classes/api/strapi/specification_v1.metadata.faulty.yaml"));
     }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String url = strapiContainer.getRestMockEndpoint("API Onboarding - Registry API", "1.0.0");
-        registry.add("strapi.base-url", () -> url);
+        registry.add("registry.adapter", () -> "strapi");
+        registry.add("strapi.base-url", () -> strapiContainer
+                .getRestMockEndpoint("API Registry - Specification", "v1")
+                .replaceAll("\\s", "+"));
     }
 
     @Test
-    void should_create_specification_resource() {
+    void should_create_specification_resource_degrade_gracefully() {
         Try<SpecificationId> result = registry.register(
                 UsecaseExamples.States.candidateScored.get().getOrThrow().toSpecification());
         assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
-    void should_update_specification_resource() {
+    void should_update_specification_resource_degrade_gracefully() {
         Try<SpecificationId> result = registry.register(
                 UsecaseExamples.States.candidateRegistered.get().getOrThrow().toSpecification());
         assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
-    void should_get_specification_resource_with_latest_revision() {
+    void should_get_specification_resource_with_latest_revision_degrade_gracefully() {
         Try<Specification> result = registry.latestAt("petstore", "platform", Version.V1);
         assertThat(result.isSuccess()).isTrue();
     }
 
     @Test
-    void should_get_specification_resource_with_revision() {
+    void should_get_specification_resource_with_revision_degrade_gracefully() {
         Try<Specification> result = registry.revisionAt("petstore", "platform", Version.V1, Revision.V100);
         assertThat(result.isSuccess()).isTrue();
     }

@@ -1,0 +1,47 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIMetadata
+metadata:
+  name: API Registry - Specification
+  version: v1
+  labels:
+    domain: API Onboarding
+    status: GA
+    team: me
+operations:
+  'POST /specifications':
+    dispatcher: JSON_BODY
+    dispatcherRules: |-
+      {
+        "exp": "/data/specId",
+        "operator": "equals",
+        "cases": {
+          "petstore-platform-1.0.0": "valid-candidate",
+          "default": "valid-candidate"
+        }
+      }
+
+  'GET /specifications':
+    dispatcher: SCRIPT
+    dispatcherRules: |-
+      def qs = mockRequest.getRequest().getQueryString()
+      if (qs == null || (!qs.contains('version=') && !qs.contains('revision='))) {
+        return "all"
+      } else if (qs.contains('version=v1') && !qs.contains('revision=')) {
+        return "latest-at-petstore-platform"
+      } else if (qs.contains('revision=1.0.0')) {
+        return "at-petstore-platform-1-0-0"
+      } else if (qs.contains('revision=1.0.1')) {
+        return "at-petstore-platform-1-0-1"
+      }
+
+  'GET /specifications/{id}':
+    dispatcher: URI_PARTS
+    dispatcherRules: id
+
+  'PUT /specifications/{id}':
+    dispatcher: URI_PARTS
+    dispatcherRules: id
+
+  'DELETE /specifications/{id}':
+    dispatcher: URI_PARTS
+    dispatcherRules: id

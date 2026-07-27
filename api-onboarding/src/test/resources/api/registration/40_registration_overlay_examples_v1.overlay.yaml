@@ -1,8 +1,8 @@
 overlay: 1.0.0
 info:
   title: Overlay for injecting examples into the Registration API specfiication
-  version: 1.0.0
-extends: '/openapi_registration_v1.yaml'
+  version: v1
+extends: '/registration_v1.openapi.yaml'
 actions:
   - target: '$' # Root of document
     update:

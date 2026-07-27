@@ -1,13 +1,13 @@
 ### Valid overlaying request
-POST http://localhost:8080/registrations/123/overlay
+POST http://{{host}}:{{port}}{{path}}/registrations/123/overlay
 Content-Type: application/json
 
 {
-  "source": "file:///src/test/resources/e2e/overlay_test.yaml"
+  "source": "file:///src/test/resources/e2e/test.overlay.yaml"
 }
 
 ### Valid implementing request
-PUT http://localhost:8080/registrations/123/component
+PUT http://{{host}}:{{port}}{{path}}/registrations/123/component
 Content-Type: application/json
 
 {
@@ -16,52 +16,52 @@ Content-Type: application/json
 }
 
 ### Valid scoring request
-PUT http://localhost:8080/registrations/123/score
+PUT http://{{host}}:{{port}}{{path}}/registrations/123/score
 Content-Type: application/json
 
 
 ### Valid on-boarding request
-POST http://localhost:8080/registrations
+POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/openapi_valid_candidate.yaml"
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/valid_candidate.openapi.yaml"
 }
 
 ### Valid request - but missing non-required info
-POST http://localhost:8080/registrations
+POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/openapi_valid_candidate_missing_non_required_info.yaml"
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/valid_candidate_missing_non_required_info.openapi.yaml"
 }
 
 ### Invalid request - missing required info
-POST http://localhost:8080/registrations
+POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/openapi_invalid_candidate_missing_required_info.yaml"
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/invalid_candidate_missing_required_info.openapi.yaml"
 }
 
 ### Valid request - but uri does not exist
-POST http://localhost:8080/registrations
+POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "file:///doesnotexist.yaml"
+  "source": "file:///doesnotexist.openapi.yaml"
 }
 
 ### Valid request - unexpected uri
-POST http://localhost:8080/registrations
+POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "d:/unexpected.yaml"
+  "source": "d:/unexpected.openapi.yaml"
 }
 
 ### Invalid request - uri is malformed - bad scheme
-POST http://localhost:8080/registrations
+POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
@@ -69,7 +69,7 @@ Content-Type: application/json
 }
 
 ### Invalid request - uri is malformed - bad scheme
-POST http://localhost:8080/registrations
+POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
@@ -77,4 +77,4 @@ Content-Type: application/json
 }
 
 ### Invalid request - operation not allowed
-GET http://localhost:8080/registrations
+GET http://{{host}}:{{port}}{{path}}/registrations

@@ -5,12 +5,16 @@ import io.obya.api.onboarding.domain.model.Contract;
 import io.obya.api.onboarding.domain.model.Score;
 import io.obya.api.onboarding.domain.model.Scorecard;
 import io.obya.common.util.Try;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.Map;
 
 import static io.obya.api.onboarding.domain.model.Scorecard.Dimension.*;
 
+@ConditionalOnProperty(name = "scorer.adapter", havingValue = "jentic")
+@Component(value = "jentic")
 public class JenticRestAdapter implements ScorerDelegate {
 
     @Override

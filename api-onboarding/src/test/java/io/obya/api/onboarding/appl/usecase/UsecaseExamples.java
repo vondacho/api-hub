@@ -4,6 +4,7 @@ import io.obya.api.onboarding.appl.usecase.workflow.State;
 import io.obya.api.onboarding.domain.model.*;
 import io.obya.common.util.Try;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -15,14 +16,18 @@ import static io.obya.api.onboarding.domain.model.Version.V1;
 public interface UsecaseExamples {
 
     interface Sources {
-        Supplier<URI> validCandidateUri = () -> uriOf("openapi_valid_candidate.yaml");
+        Supplier<URI> validCandidateUri = () -> uriOf("oas/valid_candidate.openapi.yaml");
 
         static URI uriOf(String filename) {
             return URI.create("file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/" + filename);
         }
 
-        static String bodyOf(URI uri) throws Exception {
-            return Files.readString(Paths.get(uri));
+        static String bodyOf(URI uri) {
+            try {
+                return Files.readString(Paths.get(uri));
+            } catch (IOException e) {
+                return e.getMessage();
+            }
         }
     }
 
@@ -38,6 +43,7 @@ public interface UsecaseExamples {
                         "platform", null, null))
                 .contract(Contract.from(Contract.Version.OPENAPI_V30))
                 .score(Scorecard.undefined())
+                .body(() -> Sources.bodyOf(Sources.validCandidateUri.get()))
                 .status(Status.VALID),
                 List.of());
 

@@ -1,27 +1,62 @@
-### Get
-GET http://localhost:1337/api/specifications
+###
+# @name Get all specifications
+GET http://{{host}}:{{port}}{{path}}/specifications
+
+###
+# @name Get specification 123
+GET http://{{host}}:{{port}}{{path}}/specifications/123
+
+###
+# @name Get specification 456
+GET http://{{host}}:{{port}}{{path}}/specifications/456
 
 
-### Post short specification to strapi
-POST http://localhost:1337/api/specifications
+###
+# @name Get latest specification petstore/platform/v1
+GET http://{{host}}:{{port}}{{path}}/specifications
+    ?filters[name]=petstore
+    &filters[productName]=platform
+    &filters[version]=v1
+
+###
+# @name Get specification petstore/platform/v1/1.0.0
+GET http://{{host}}:{{port}}{{path}}/specifications
+    ?filters[name]=petstore
+    &filters[productName]=platform
+    &filters[version]=v1
+    &filters[revision]=1.0.0
+
+
+###
+# @name Get specification petstore/platform/v1/1.0.1
+GET http://{{host}}:{{port}}{{path}}/specifications
+    ?filters[name]=petstore
+    &filters[productName]=platform
+    &filters[version]=v1
+    &filters[revision]=1.0.1
+
+###
+# @name Post short specification to strapi
+POST http://{{host}}:{{port}}{{path}}/specifications
 Content-Type: application/json
 
 {
   "data": {
     "specId": "test-test-1.0.1",
-    "apiName": "test",
-    "apiVersion": "1.0.1",
+    "name": "test",
+    "version": "v1",
+    "revision": "1.0.1",
     "productName": "test",
     "bundleName": "test",
     "contract": "OPENAPI_V30",
-    "body": [
-    ]
+    "body": {}
   }
 }
 
 
-### Post specification to strapi
-POST http://localhost:1337/api/specifications
+###
+# @name Post specification to strapi
+POST http://{{host}}:{{port}}{{path}}/specifications
 Content-Type: application/json
 
 {

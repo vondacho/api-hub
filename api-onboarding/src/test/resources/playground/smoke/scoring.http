@@ -1,0 +1,15 @@
+###
+# @name valid candidate: 200
+POST http://{{host}}:{{port}}{{path}}/scorings
+
+{
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/valid_candidate.openapi.yaml"
+}
+
+###
+# @name uri not found: 422
+POST http://{{host}}:{{port}}{{path}}/scorings
+
+{
+  "source": "file:///notfound.openapi.yaml"
+}

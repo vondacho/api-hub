@@ -3,14 +3,20 @@ info:
   description: onboarding api backend
   version: 1.0.0
 
-scorer:
-  adapter: dummy
-
 registry:
   adapter: dummy
 
 strapi:
   base-url: http://localhost:1337/api
+
+scorer:
+  adapter: dummy
+
+spectral:
+  base-url: http://localhost:8081/api
+
+jentic:
+  base-url: http://localhost:8081/api
 
 spring:
   mvc:

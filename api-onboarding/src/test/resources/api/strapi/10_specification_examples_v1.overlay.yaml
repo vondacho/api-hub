@@ -1,0 +1,270 @@
+overlay: 1.0.0
+info:
+  title: Overlay for injecting examples into the Registry API specfiication
+  version: v1
+extends: '/specification_v1.openapi.json'
+actions:
+  - target: '$' # Root of document
+    update:
+      paths:
+        /specifications:
+          get:
+            parameters:
+              - name: filters
+                in: query
+                schema:
+                  type: object
+                examples:
+                  latest-at-petstore-platform:
+                    value:
+                      name: petstore
+                      productName: platform
+                      version: v1
+                  at-petstore-platform-1-0-0:
+                    value:
+                      name: petstore
+                      productName: platform
+                      version: v1
+                      revision: 1.0.0
+                  at-petstore-platform-1-0-1:
+                    value:
+                      name: petstore
+                      productName: platform
+                      version: v1
+                      revision: 1.0.1
+            responses:
+              "200":
+                content:
+                  application/json:
+                    examples:
+                      latest-at-petstore-platform:
+                        $ref: '#/components/examples/out-all-specifications-456'
+                      at-petstore-platform-1-0-0:
+                        $ref: '#/components/examples/out-all-specifications-123'
+                      at-petstore-platform-1-0-1:
+                        $ref: '#/components/examples/out-all-specifications-456'
+                      all:
+                        $ref: '#/components/examples/out-all-specifications'
+          post:
+            requestBody:
+              content:
+                application/json:
+                  examples:
+                    valid-candidate:
+                      $ref: '#/components/examples/in-valid-candidate'
+            responses:
+              "201":
+                content:
+                  application/json:
+                    examples:
+                      valid-candidate:
+                        $ref: '#/components/examples/out-specification-123'
+
+        /specifications/{id}:
+          get:
+            parameters:
+              - name: id
+                in: path
+                schema:
+                  type: string
+                examples:
+                  at-123:
+                    value: '123'
+                  at-456:
+                    value: '456'
+                  unexistent:
+                    value: not-found
+            responses:
+              "200":
+                content:
+                  application/json:
+                    examples:
+                      at-123:
+                        $ref: '#/components/examples/out-specification-123'
+                      at-456:
+                        $ref: '#/components/examples/out-specification-456'
+          put:
+            parameters:
+              - name: id
+                in: path
+                schema:
+                  type: string
+                examples:
+                  at-123:
+                    value: '123'
+                  at-456:
+                    value: '456'
+            requestBody:
+              content:
+                application/json:
+                  examples:
+                    at-123:
+                      $ref: '#/components/examples/in-valid-candidate'
+            responses:
+              "200":
+                content:
+                  application/json:
+                    examples:
+                      at-123:
+                        $ref: '#/components/examples/out-specification-123'
+                      at-456:
+                        $ref: '#/components/examples/out-specification-456'
+          delete:
+            parameters:
+              - name: id
+                in: path
+                schema:
+                  type: string
+                examples:
+                  at-123:
+                    value: '123'
+                  at-456:
+                    value: '456'
+            responses:
+              "200":
+                content:
+                  application/json:
+                    examples:
+                      at-123:
+                        $ref: '#/components/examples/out-specification-123'
+                      at-456:
+                        $ref: '#/components/examples/out-specification-456'
+
+      components:
+        examples:
+          in-valid-candidate:
+            description: A valid candidate to be registered
+            value:
+              data:
+                specId: petstore-platform-1.0.0
+                name: petstore
+                productName: platform
+                version: v1
+                revision: 1.0.0
+                bundleName: petstore
+                componentName: petstore-api
+                componentRevision: 1.0.0
+                contract: OPENAPI_V30
+                body: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"api-registry-core\",\"version\":\"1.0.1\"},\"paths\":{}}"
+                score: "{\"score\":\"74\"}"
+
+          out-specification-123:
+            description: The details of a previously registered specification
+            value:
+              data:
+                id: 123
+                documentId: "{{randomString(64)}}"
+                specId: petstore-platform-1.0.0
+                name: petstore
+                productName: platform
+                version: v1
+                revision: 1.0.0
+                bundleName: petstore
+                contract: OPENAPI_V30
+                body: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"api-registry-core\",\"version\":\"1.0.1\"},\"paths\":{}}"
+                score: "{\"score\":\"74\"}"
+                violations: [ ]
+                createdAt: "2026-07-22"
+                updatedAt: "2026-07-22"
+                publishedAt: "2026-07-22"
+
+          out-specification-456:
+            description: The details of a previously registered specification
+            value:
+              data:
+                id: 456
+                documentId: qz08x1m9d7e2clx7fal90002
+                specId: petstore-platform-1.0.1
+                name: petstore
+                productName: platform
+                version: v1
+                revision: 1.0.1
+                bundleName: petstore
+                componentName: petstore-api
+                componentRevision: 1.0.0
+                contract: OPENAPI_V30
+                body: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"api-registry-core\",\"version\":\"1.0.1\"},\"paths\":{}}"
+                score: "{\"score\":\"74\"}"
+                violations: [ ]
+                createdAt: "2026-07-23"
+                updatedAt: "2026-07-23"
+                publishedAt: "2026-07-23"
+
+          out-all-specifications:
+            description: The details of a previously registered specification
+            value:
+              data:
+                - id: 123
+                  documentId: clx7fal90002qz08x1m9d7e2
+                  specId: petstore-platform-1.0.0
+                  name: petstore
+                  productName: platform
+                  version: v1
+                  revision: 1.0.0
+                  bundleName: petstore
+                  contract: OPENAPI_V30
+                  body: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"api-registry-core\",\"version\":\"1.0.1\"},\"paths\":{}}"
+                  score: "{\"score\":\"74\"}"
+                  violations: []
+                  createdAt: "2026-07-22"
+                  updatedAt: "2026-07-22"
+                  publishedAt: "2026-07-22"
+                - id: 456
+                  documentId: qz08x1m9d7e2clx7fal90002
+                  specId: petstore-platform-1.0.1
+                  name: petstore
+                  productName: platform
+                  version: v1
+                  revision: 1.0.1
+                  bundleName: petstore
+                  componentName: petstore-api
+                  componentRevision: 1.0.0
+                  contract: OPENAPI_V30
+                  body: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"api-registry-core\",\"version\":\"1.0.1\"},\"paths\":{}}"
+                  score: "{\"score\":\"74\"}"
+                  violations: [ ]
+                  createdAt: "2026-07-23"
+                  updatedAt: "2026-07-23"
+                  publishedAt: "2026-07-23"
+
+          out-all-specifications-123:
+            description: The details of a previously registered specification
+            value:
+              data:
+                - id: 123
+                  documentId: clx7fal90002qz08x1m9d7e2
+                  specId: petstore-platform-1.0.0
+                  name: petstore
+                  productName: platform
+                  version: v1
+                  revision: 1.0.0
+                  bundleName: petstore
+                  contract: OPENAPI_V30
+                  body: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"api-registry-core\",\"version\":\"1.0.1\"},\"paths\":{}}"
+                  score: "{\"score\":\"74\"}"
+                  violations: []
+                  createdAt: "2026-07-22"
+                  updatedAt: "2026-07-22"
+                  publishedAt: "2026-07-22"
+
+          out-all-specifications-456:
+            description: The details of a previously registered specification
+            value:
+              data:
+                - id: 456
+                  documentId: qz08x1m9d7e2clx7fal90002
+                  specId: petstore-platform-1.0.1
+                  name: petstore
+                  productName: platform
+                  version: v1
+                  revision: 1.0.1
+                  bundleName: petstore
+                  componentName: petstore-api
+                  componentRevision: 1.0.0
+                  contract: OPENAPI_V30
+                  body: "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"api-registry-core\",\"version\":\"1.0.1\"},\"paths\":{}}"
+                  score: "{\"score\":\"74\"}"
+                  violations: [ ]
+                  createdAt: "2026-07-23"
+                  updatedAt: "2026-07-23"
+                  publishedAt: "2026-07-23"

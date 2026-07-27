@@ -46,8 +46,8 @@ class RegistrationContractTest {
     @Container
     static MicrocksContainer microcksContainer = new MicrocksContainer(
             DockerImageName.parse("quay.io/microcks/microcks-uber:latest"))
-            //.withDebugLogLevel()
-            .withAccessToHost(true);
+                .withDebugLogLevel()
+                .withAccessToHost(true);
 
     @LocalServerPort
     Integer port;
@@ -58,8 +58,8 @@ class RegistrationContractTest {
     @BeforeAll
     static void importSpecification() throws MicrocksException, IOException {
         microcksContainer.start();
-        microcksContainer.importAsMainArtifact(
-                new File("target/test-classes/api/registration/resolved.openapi_registration_v1.yaml"));
+        microcksContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
+                new File("target/test-classes/api/registration/resolved.registration_v1.openapi.yaml"));
     }
 
     @BeforeEach
@@ -95,7 +95,7 @@ class RegistrationContractTest {
         ));
 
         TestRequest testRequest = new TestRequest.Builder()
-                .serviceId("API Onboarding - Registration API:1.0.0")
+                .serviceId("API Onboarding - Registration:v1")
                 .runnerType(TestRunnerType.OPEN_API_SCHEMA.name())
                 .testEndpoint("http://host.testcontainers.internal:" + port)
                 .filteredOperations(List.of(

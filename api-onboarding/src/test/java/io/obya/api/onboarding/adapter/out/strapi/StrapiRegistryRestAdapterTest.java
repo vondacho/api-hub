@@ -3,22 +3,20 @@ package io.obya.api.onboarding.adapter.out.strapi;
 import io.github.microcks.testcontainers.MicrocksContainer;
 import io.github.microcks.testcontainers.MicrocksException;
 import io.obya.api.onboarding.appl.usecase.UsecaseExamples;
-import io.obya.api.onboarding.domain.model.Revision;
-import io.obya.api.onboarding.domain.model.Specification;
-import io.obya.api.onboarding.domain.model.SpecificationId;
-import io.obya.api.onboarding.domain.model.Version;
+import io.obya.api.onboarding.domain.model.*;
 import io.obya.common.util.Try;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -28,14 +26,15 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * Strapi is replaced by a Microcks server so the tests remain self-contained
  * while still validating the HTTP contract with the registry.
  */
-@Disabled
+@Slf4j
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class StrapiRegistryRestAdapterTest {
 
     @Container
-    static MicrocksContainer strapiContainer =
-            new MicrocksContainer("quay.io/microcks/microcks-uber:latest")
-                    .withDebugLogLevel();
+    static MicrocksContainer strapiContainer = new MicrocksContainer(
+            DockerImageName.parse("quay.io/microcks/microcks-uber:latest"))
+                .withDebugLogLevel();
 
     @Autowired
     StrapiRegistryRestAdapter registry;
@@ -43,40 +42,77 @@ class StrapiRegistryRestAdapterTest {
     @BeforeAll
     static void importSpecification() throws MicrocksException, IOException {
         strapiContainer.start();
-        strapiContainer.importAsMainArtifact(
-                new File("target/classes/api/strapi/strapi_specification_v1.json"));
+        strapiContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
+                new File("target/test-classes/api/strapi/resolved.specification_v1.openapi.yaml"));
+        strapiContainer.importAsSecondaryArtifact(
+                new File("target/test-classes/api/strapi/specification_v1.metadata.yaml"));
     }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        String url = strapiContainer.getRestMockEndpoint("API Onboarding - Registry API", "1.0.0");
-        registry.add("strapi.base-url", () -> url);
+        registry.add("registry.adapter", () -> "strapi");
+        registry.add("strapi.base-url", () -> strapiContainer
+                .getRestMockEndpoint("API Registry - Specification", "v1")
+                .replaceAll("\\s", "+"));
     }
 
+    @Order(1)
     @Test
     void should_create_specification_resource() {
         Try<SpecificationId> result = registry.register(
                 UsecaseExamples.States.candidateScored.get().getOrThrow().toSpecification());
+        printLogs();
         assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getOrThrow()).isEqualTo(DomainExamples.Specifications.id123.get());
     }
 
+    @Order(2)
+    @Test
+    void should_get_all_specification_resources() {
+        Try<List<Specification>> result = registry.all();
+        printLogs();
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getOrThrow()).hasSize(2);
+    }
+
+    @Order(3)
+    @Test
+    void should_get_specification_resource_with_latest_revision() {
+        Try<Specification> result = registry.latestAt("petstore", "platform", Version.V1);
+        printLogs();
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getOrThrow().id()).isEqualTo(DomainExamples.Specifications.id456.get());
+    }
+
+    @Order(4)
+    @Test
+    void should_get_specification_resource_with_revision_100() {
+        Try<Specification> result = registry.revisionAt("petstore", "platform", Version.V1, Revision.V100);
+        printLogs();
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getOrThrow().id()).isEqualTo(DomainExamples.Specifications.id123.get());
+    }
+
+    @Order(5)
+    @Test
+    void should_get_specification_resource_with_revision_101() {
+        Try<Specification> result = registry.revisionAt("petstore", "platform", Version.V1, Revision.V101);
+        printLogs();
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getOrThrow().id()).isEqualTo(DomainExamples.Specifications.id456.get());
+    }
+
+    @Order(6)
     @Test
     void should_update_specification_resource() {
         Try<SpecificationId> result = registry.register(
                 UsecaseExamples.States.candidateRegistered.get().getOrThrow().toSpecification());
+        printLogs();
         assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getOrThrow()).isEqualTo(DomainExamples.Specifications.id123.get());
     }
 
-    @Test
-    void should_get_specification_resource_with_latest_revision() {
-        Try<Specification> result = registry.latestAt("petstore", "platform", Version.V1);
-        assertThat(result.isSuccess()).isTrue();
+    private void printLogs() {
+        log.info("LOGS\n-------\n" + strapiContainer.getLogs() + "\n");
     }
-
-    @Test
-    void should_get_specification_resource_with_revision() {
-        Try<Specification> result = registry.revisionAt("petstore", "platform", Version.V1, Revision.V100);
-        assertThat(result.isSuccess()).isTrue();
-    }
-
 }

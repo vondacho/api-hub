@@ -15,10 +15,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Align every junit-platform-* / junit-jupiter-* artifact (this POM has no
-                 parent BOM, so transitive deps such as cucumber-junit-platform-engine would
-                 otherwise drag junit-platform-engine down to an older, surefire-incompatible
-                 version). -->
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
@@ -275,14 +271,36 @@
                 <version>7.23.0</version>
                 <executions>
                     <execution>
+                        <id>strapi-client</id>
+                        <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/src/main/resources/api/strapi/strapi_specification_v1.json</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/api/strapi/specification_v1.openapi.json</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>io.obya.api.onboarding.adapter.out.strapi.api</apiPackage>
                             <modelPackage>io.obya.api.onboarding.adapter.out.strapi.model</modelPackage>
+                            <configOptions>
+                                <library>spring-http-interface</library>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <openApiNullable>false</openApiNullable>
+                                <useBeanValidation>true</useBeanValidation>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scorer-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/api/scoring/scoring_v1.openapi.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>io.obya.api.onboarding.adapter.out.scorer.api</apiPackage>
+                            <modelPackage>io.obya.api.onboarding.adapter.out.scorer.model</modelPackage>
                             <configOptions>
                                 <library>spring-http-interface</library>
                                 <useSpringBoot3>true</useSpringBoot3>
@@ -300,20 +318,61 @@
                 <version>3.6.3</version>
                 <executions>
                     <execution>
-                        <id>bundle-and-overlay-api-contracts</id>
-                        <phase>generate-test-resources</phase>
+                        <id>bundle-registration</id>
+                        <phase>process-test-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
                             <executable>${project.basedir}/scripts/bundle_registration_api.sh</executable>
                             <arguments>
-                                <argument>openapi_registration_v1.yaml</argument>
+                                <argument>registration_v1.openapi.yaml</argument>
                                 <argument>${project.build.testOutputDirectory}/api/registration</argument>
                             </arguments>
                             <environmentVariables>
                                 <SPEC_DIR>${project.basedir}/src/main/resources/api/registration</SPEC_DIR>
                                 <OVERLAY_DIR>${project.basedir}/src/test/resources/api/registration</OVERLAY_DIR>
+                                <USE_NVM>false</USE_NVM>
+                                <SKIP_LINT>true</SKIP_LINT>
+                            </environmentVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bundle-scoring</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/scripts/bundle_scoring_api.sh</executable>
+                            <arguments>
+                                <argument>scoring_v1.openapi.yaml</argument>
+                                <argument>${project.build.testOutputDirectory}/api/scoring</argument>
+                            </arguments>
+                            <environmentVariables>
+                                <SPEC_DIR>${project.basedir}/src/main/resources/api/scoring</SPEC_DIR>
+                                <OVERLAY_DIR>${project.basedir}/src/test/resources/api/scoring</OVERLAY_DIR>
+                                <USE_NVM>false</USE_NVM>
+                                <SKIP_LINT>true</SKIP_LINT>
+                            </environmentVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bundle-specification</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/scripts/bundle_specification_api.sh</executable>
+                            <arguments>
+                                <argument>specification_v1.openapi.json</argument>
+                                <argument>${project.build.testOutputDirectory}/api/strapi</argument>
+                            </arguments>
+                            <environmentVariables>
+                                <SPEC_DIR>${project.basedir}/src/main/resources/api/strapi</SPEC_DIR>
+                                <OUTPUT_FILE>specification_v1.openapi.yaml</OUTPUT_FILE>
+                                <OVERLAY_DIR>${project.basedir}/src/test/resources/api/strapi</OVERLAY_DIR>
                                 <USE_NVM>false</USE_NVM>
                                 <SKIP_LINT>true</SKIP_LINT>
                             </environmentVariables>

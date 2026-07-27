@@ -23,7 +23,7 @@ public class OpenApiValidationConfig implements WebMvcConfigurer {
         parseOptions.setResolveCombinators(true);
         parseOptions.setFlattenComposedSchemas(true);
         return new OpenApiValidationInterceptor(OpenApiInteractionValidator
-                .createForSpecificationUrl("api/registration/openapi_registration_v1.yaml")
+                .createForSpecificationUrl("api/registration/registration_v1.openapi.yaml")
                 .withParseOptions(parseOptions)
                 .build());
     }

@@ -9,15 +9,15 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
-@EnableConfigurationProperties(StrapiProperties.class)
+@EnableConfigurationProperties(StrapiClientProperties.class)
 @Configuration
 public class StrapiClientConfig {
 
     @ConditionalOnProperty(name = "registry.adapter", havingValue = "strapi")
     @Bean
-    SpecificationApi strapiApiClient(RestClient.Builder builder, StrapiProperties props) {
+    SpecificationApi strapiApiClient(RestClient.Builder builder, StrapiClientProperties props) {
         RestClient restClient = builder
-                .baseUrl("http://localhost:1337/api")
+                .baseUrl(props.baseUrl().toString())
                 .build();
 
         HttpServiceProxyFactory factory = HttpServiceProxyFactory

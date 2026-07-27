@@ -1,0 +1,25 @@
+overlay: 1.0.0
+info:
+  title: Overlay for injecting metrics data into the API document
+  version: v1
+extends: '/registration_v1_openapi.yaml'
+actions:
+  - target: '$' # Root of document
+    update:
+      paths:
+        /registrations:
+          post:
+            x-metric-sli: {{submitCandidate.sli}}
+            x-metric-slo: {{submitCandidate.slo}}
+        /registrations/{id}/score:
+          put:
+            x-metric-sli: {{scoreSpecification.sli}}
+            x-metric-slo: {{scoreSpecification.slo}}
+        /registrations/{id}/component:
+          put:
+            x-metric-sli: {{implementSpecification.sli}}
+            x-metric-slo: {{implementSpecification.slo}}
+        /registrations/{id}/overlay:
+          post:
+            x-metric-sli: {{overlaySpecification.sli}}
+            x-metric-slo: {{overlaySpecification.slo}}

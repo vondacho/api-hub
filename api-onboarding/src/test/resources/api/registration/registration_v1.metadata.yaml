@@ -1,0 +1,10 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIMetadata
+metadata:
+  name: API Onboarding - Registration
+  version: v1
+  labels:
+    domain: API Onboarding
+    status: GA
+    team: me
+

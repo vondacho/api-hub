@@ -6,4 +6,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.net.URL;
 
 @ConfigurationProperties(prefix = "strapi")
-public record StrapiProperties(@NotBlank URL baseUrl) {}
+public record StrapiClientProperties(@NotBlank URL baseUrl) {}

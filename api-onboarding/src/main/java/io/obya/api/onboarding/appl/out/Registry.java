@@ -17,14 +17,38 @@ public interface Registry {
     Try<Specification> revisionAt(String name, String productName, Version version, Revision revision, String...attributes);
 
     default Try<Specification> at(SpecificationId id) {
-        return at(id, "info", "contract", "metadata");
+        return at(id,
+                "name",
+                "productName",
+                "version",
+                "revision",
+                "bundleName",
+                "componentName",
+                "componentRevision",
+                "contract");
     }
 
     default Try<Specification> at(String name, String productName, Version version) {
-        return latestAt(name, productName, version, "info", "contract", "metadata");
+        return latestAt(name, productName, version,
+                "name",
+                "productName",
+                "version",
+                "revision",
+                "bundleName",
+                "componentName",
+                "componentRevision",
+                "contract");
     }
 
     default Try<Specification> at(String name, String productName, Version version, Revision revision) {
-        return revisionAt(name, productName, version, revision, "info", "contract", "metadata");
+        return revisionAt(name, productName, version, revision,
+                "name",
+                "productName",
+                "version",
+                "revision",
+                "bundleName",
+                "componentName",
+                "componentRevision",
+                "contract");
     }
 }

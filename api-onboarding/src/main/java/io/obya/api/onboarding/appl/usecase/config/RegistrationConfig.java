@@ -4,7 +4,6 @@ import io.obya.api.onboarding.appl.out.ScorerDelegate;
 import io.obya.api.onboarding.appl.out.Registry;
 import io.obya.api.onboarding.appl.usecase.RegistrationService;
 import io.obya.api.onboarding.appl.usecase.processing.reader.ClasspathResourceReader;
-import io.obya.api.onboarding.domain.model.Violation;
 import io.obya.api.onboarding.appl.usecase.processing.*;
 import io.obya.api.onboarding.appl.usecase.processing.aas.AASV20Parser;
 import io.obya.api.onboarding.appl.usecase.processing.aas.AASV26Parser;
@@ -74,40 +73,18 @@ public class RegistrationConfig {
     }
 
     public Overlayer scoreOverlayer() {
-        return Overlayer.fromClasspath(classpathOf("overlay_scores_v1.yaml"),
+        return Overlayer.fromClasspath(classpathOf("scores_v1.overlay.yaml"),
                 (state, _) -> Map.of(
                     "score", state.score()
         ));
     }
 
     public Overlayer componentOverlayer() {
-        return Overlayer.fromClasspath(classpathOf("overlay_component_v1.yaml"),
+        return Overlayer.fromClasspath(classpathOf("component_v1.overlay.yaml"),
                 (state, _) -> Map.of(
                 "name", state.metadata().componentName(),
                 "revision", state.metadata().componentRevision().semver().getVersion()
         ));
-    }
-
-    public Overlayer violationOverlayer() {
-        return Overlayer.fromClasspath(classpathOf("overlay_violations_v1.yaml"),
-                (_, exceptions) -> Map.of(
-                "violations", Violation.from(exceptions)
-        ));
-    }
-
-    public Overlayer metricOverlayer() {
-        return Overlayer.fromClasspath(classpathOf("overlay_metrics_v1.yaml"),
-                (_,_) -> Map.of());
-    }
-
-    public Overlayer rbacAbacOverlayer() {
-        return Overlayer.fromClasspath(classpathOf("overlay_rbac_abac_v1.yaml"),
-                (_,_) -> Map.of());
-    }
-
-    public Overlayer samplesOverlayer() {
-        return Overlayer.fromClasspath(classpathOf("overlay_samples_v1.yaml"),
-                (_,_) -> Map.of());
     }
 
     private URI classpathOf(String filename) {
