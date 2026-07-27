@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: API Onboarding - Registration API
-  version: 1.0.0
-  description: Minimal API surface for submitting Candidates to the registration REST controller.
+  title: API Onboarding - Registration
+  version: v1
+  description: Minimal API surface for submitting candidate specifications to be onboarded.
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
@@ -44,13 +44,13 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'openapi_problem_rfc_v1.json#/components/schemas/ProblemDetails'
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
         "422":
           description: Your client issued a request that failed validation.
           content:
             application/problem+json:
               schema:
-                $ref: 'openapi_problem_rfc_v1.json#/components/schemas/ProblemDetails'
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
 
   /registrations/{id}/score:
     put:
@@ -74,13 +74,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Scorecard'
         "400":
-          $ref: 'openapi_problem_rfc_v1.json#/components/responses/BadRequest'
+          $ref: '../problem/problem_rfc_v1.openapi.json#/components/responses/BadRequest'
         "422":
           description: Your client issued a request that failed validation.
           content:
             application/problem+json:
               schema:
-                $ref: 'openapi_problem_rfc_v1.json#/components/schemas/ProblemDetails'
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
 
   /registrations/{id}/component:
     put:
@@ -110,13 +110,13 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'openapi_problem_rfc_v1.json#/components/schemas/ProblemDetails'
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
         "422":
           description: Your client issued a request that failed validation.
           content:
             application/problem+json:
               schema:
-                $ref: 'openapi_problem_rfc_v1.json#/components/schemas/ProblemDetails'
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
 
   /registrations/{id}/overlay:
     post:
@@ -150,13 +150,13 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'openapi_problem_rfc_v1.json#/components/schemas/ProblemDetails'
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
         "422":
           description: Your client issued a request that failed validation.
           content:
             application/problem+json:
               schema:
-                $ref: 'openapi_problem_rfc_v1.json#/components/schemas/ProblemDetails'
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
           
 components:
   schemas:
