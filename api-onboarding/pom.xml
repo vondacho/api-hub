@@ -318,6 +318,19 @@
                 <version>3.6.3</version>
                 <executions>
                     <execution>
+                        <id>fix-openapi-generator-issue</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/scripts/fix-openapi-generator-issue.sh</executable>
+                            <arguments>
+                                <argument>${project.build.directory}/generated-sources/openapi/src/main/java/io/obya/api/onboarding/adapter/out/strapi/api</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>bundle-registration</id>
                         <phase>process-test-resources</phase>
                         <goals>
