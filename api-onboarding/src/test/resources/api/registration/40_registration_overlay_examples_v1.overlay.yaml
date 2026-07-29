@@ -70,7 +70,7 @@ actions:
           valid-overlay-uri:
             description: A valid overlay submission example from a local file
             value:
-              source: 'file:///src/test/resources/api/examples/openapi_valid_overlay.yaml'
+              source: 'file:///oai/valid.overlay.yaml'
 
           invalid-overlay-missing-uri:
             description: An overlay submission with a missing URI

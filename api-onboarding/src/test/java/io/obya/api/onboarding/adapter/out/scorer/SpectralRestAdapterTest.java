@@ -58,7 +58,7 @@ class SpectralRestAdapterTest {
     @Test
     void should_create_specification_resource() {
         Try<Scorecard> result = scorer.score(
-                UsecaseExamples.Sources.bodyOf(UsecaseExamples.Sources.validCandidateUri.get()),
+                UsecaseExamples.Sources.validCandidateUri.get(),
                 Contract.Type.OPENAPI);
         printLogs();
         assertThat(result.isSuccess()).isTrue();

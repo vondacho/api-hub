@@ -19,9 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.function.Supplier;
 
 @Configuration
 public class RegistrationConfig {
@@ -33,12 +31,7 @@ public class RegistrationConfig {
     };
 
     @Bean
-    public Supplier<LocalDateTime> nowProvider() {
-        return LocalDateTime::now;
-    }
-
-    @Bean
-    public RegistrationService registrationService(Registry registry, ScorerDelegate remoteScorer, Supplier<LocalDateTime> nowProvider) {
+    public RegistrationService registrationService(Registry registry, ScorerDelegate remoteScorer) {
         return new RegistrationService(
             receptionist(),
             parser(),
@@ -46,8 +39,7 @@ public class RegistrationConfig {
             scoreOverlayer(),
             componentOverlayer(),
             revisor(registry),
-            registry,
-            nowProvider);
+            registry);
     }
 
     public Receptionist receptionist() {

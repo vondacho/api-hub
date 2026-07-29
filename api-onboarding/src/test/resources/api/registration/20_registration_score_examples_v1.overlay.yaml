@@ -43,27 +43,27 @@ actions:
               score: 74
               grade: "A-"
               dimensions:
-                - name: "FC - Foundational Compliance"
+                - name: "FC"
                   intent: "Base layer of spec validity and structural soundness"
                   score: 99
                   grade: "A+"
-                - name: "SEC - Security"
+                - name: "SEC"
                   intent: "Trust, risk posture, and security compliance."
                   score: 100
                   grade: "A+"
-                - name: "DX - Developer Experience"
+                - name: "DX"
                   intent: "Clarity, completeness, and ingestion readiness for developers and tooling"
                   score: 66
                   grade: "B"
-                - name: "ARAX - AI-Readiness & Agent Experience"
+                - name: "ARAX"
                   intent: "Semantic breadth, depth, and agent comprehension for AI systems."
                   score: 51
                   grade: "C-"
-                - name: "AU - Agent Usability"
+                - name: "AU"
                   intent: "Functional utility, complexity comfort, and AI orchestration readiness."
                   score: 93
                   grade: "A+"
-                - name: "AID - AI Discoverability"
+                - name: "AID"
                   intent: "Findability, semantic richness, and reasoning readiness."
                   score: 100
                   grade: "A+"

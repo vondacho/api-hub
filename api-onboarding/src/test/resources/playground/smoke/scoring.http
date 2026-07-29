@@ -1,14 +1,19 @@
 ###
 # @name valid candidate: 200
 POST http://{{host}}:{{port}}{{path}}/scorings
+Accept: application/json
+Content-Type: application/json
 
 {
-  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/valid_candidate.openapi.yaml"
+  "source": "file:///valid_candidate.openapi.yaml",
+  "contract": "OPENAPI"
 }
 
 ###
 # @name uri not found: 422
 POST http://{{host}}:{{port}}{{path}}/scorings
+Accept: application/json
+Content-Type: application/json
 
 {
   "source": "file:///notfound.openapi.yaml"

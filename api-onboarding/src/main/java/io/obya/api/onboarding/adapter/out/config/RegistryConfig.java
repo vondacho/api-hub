@@ -19,7 +19,7 @@ import static io.obya.api.onboarding.domain.model.Violation.Code.RESOURCE_NOT_FO
 @Configuration
 public class RegistryConfig {
 
-    @ConditionalOnProperty(name = "registry.adapter", havingValue = "dummy")
+    @ConditionalOnProperty(name = "registry.adapter", havingValue = "dummy",  matchIfMissing = true)
     @Bean
     public Registry dummyRegistry() {
         return new Registry() {

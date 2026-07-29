@@ -2,7 +2,7 @@ overlay: 1.0.0
 info:
   title: Overlay for injecting examples into the Registration API specfiication
   version: v1
-extends: '/registration_v1.openapi.yaml'
+extends: '/registration_v1.openapi.openapi.yaml'
 actions:
   - target: '$' # Root of document
     update:
@@ -63,22 +63,22 @@ actions:
           valid-candidate-uri:
             description: 'A valid candidate submission example from a local file'
             value:
-              source: 'file:///src/test/resources/api/examples/openapi_valid_candidate.yaml'
+              source: 'file:///oas/valid_candidate.openapi.yaml'
 
           scored-candidate-uri:
             description: 'A valid candidate submission example from a local file'
             value:
-              source: "file:///src/test/resources/api/examples/openapi_valid_candidate.yaml"
+              source: "file:///oas/valid_candidate.openapi.yaml"
 
           registered-candidate-uri:
             description: "A valid candidate submission example from a local file"
             value:
-              source: "file:///src/test/resources/api/examples/openapi_registered_candidate.yaml"
+              source: "file:///oas/registered_candidate.openapi.yaml"
 
           rejected-candidate-uri:
             description: "A valid candidate submission example from a local file"
             value:
-              source: "file:///src/test/resources/api/examples/openapi_rejected_candidate.yaml"
+              source: "file:///oas/rejected_candidate.openapi.yaml"
 
           invalid-candidate-missing-uri:
             description: A candidate submission with a missing URI
@@ -93,12 +93,12 @@ actions:
           invalid-candidate-not-found-uri:
             description: A candidate submission with a URI that does not exist
             value:
-              source: 'file:///not_found.yaml'
+              source: 'file:///not_found.openapi.yaml'
 
           candidate-validated:
             description: A valid candidate submission
             value:
-              source: 'file:///src/test/resources/api/examples/openapi_valid_candidate.yaml'
+              source: 'file:///valid_candidate.openapi.yaml'
               contract: OPENAPI_V31
               info:
                 title: petstore
@@ -114,7 +114,7 @@ actions:
           candidate-scored:
             description: 'A valid candidate with a quality score'
             value:
-              source: 'file:///src/test/resources/api/examples/openapi_scored_candidate.yaml'
+              source: 'file:///scored_candidate.openapi.yaml'
               contract: OPENAPI_V31
               info:
                 title: petstore
@@ -130,19 +130,19 @@ actions:
                 score: 74
                 grade: "A-"
                 dimensions:
-                  - name: "FC - Foundational Compliance"
+                  - name: FC
                     intent: "Base layer of spec validity and structural soundness"
                     score: 99
                     grade: "A+"
-                  - name: "SEC - Security"
+                  - name: SEC
                     intent: "Trust, risk posture, and security compliance"
                     score: 100
                     grade: "A+"
-                  - name: "DX - Developer Experience"
+                  - name: DX
                     intent: "Clarity, completeness, and ingestion readiness for developers and tooling"
                     score: 66
                     grade: "B"
-                  - name: "MR - Mock Readiness"
+                  - name: MR
                     intent: "Ease of creating mock servers"
                     score: 85
                     grade: "A+"
@@ -151,7 +151,7 @@ actions:
             description: "A candidate that has been registered successfully"
             value:
               id: '123'
-              source: "file:///src/test/resources/api/examples/openapi_registered_candidate.yaml"
+              source: "file:///registered_candidate.openapi.yaml"
               contract: OPENAPI_V31
               info:
                 title: petstore
@@ -167,27 +167,27 @@ actions:
                 score: 74
                 grade: "A-"
                 dimensions:
-                  - name: "FC - Foundational Compliance"
+                  - name: FC
                     intent: "Base layer of spec validity and structural soundness"
                     score: 99
                     grade: "A+"
-                  - name: "SEC - Security"
+                  - name: SEC
                     intent: "Trust, risk posture, and security compliance."
                     score: 100
                     grade: "A+"
-                  - name: "DX - Developer Experience"
+                  - name: DX
                     intent: "Clarity, completeness, and ingestion readiness for developers and tooling"
                     score: 66
                     grade: "B"
-                  - name: "ARAX - AI-Readiness & Agent Experience"
+                  - name: ARAX
                     intent: "Semantic breadth, depth, and agent comprehension for AI systems."
                     score: 51
                     grade: "C-"
-                  - name: "AU - Agent Usability"
+                  - name: AU
                     intent: "Functional utility, complexity comfort, and AI orchestration readiness."
                     score: 93
                     grade: "A+"
-                  - name: "AID - AI Discoverability"
+                  - name: AID
                     intent: "Findability, semantic richness, and reasoning readiness."
                     score: 100
                     grade: "A+"

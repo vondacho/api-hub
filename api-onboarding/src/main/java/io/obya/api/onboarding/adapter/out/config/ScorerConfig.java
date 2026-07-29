@@ -17,7 +17,7 @@ import static io.obya.api.onboarding.domain.model.Scorecard.Dimension.FC;
 @Configuration
 public class ScorerConfig {
 
-    @ConditionalOnProperty(name = "scorer.adapter", havingValue = "dummy")
+    @ConditionalOnProperty(name = "scorer.adapter", havingValue = "dummy",  matchIfMissing = true)
     @Bean
     public ScorerDelegate dummyScorer() {
         return new ScorerDelegate() {

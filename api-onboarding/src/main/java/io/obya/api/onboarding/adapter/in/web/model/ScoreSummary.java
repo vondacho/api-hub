@@ -20,7 +20,7 @@ public record ScoreSummary(int score, String grade, List<Dimension> dimensions, 
                 gradeIt(scorecard.global()),
                 scorecard.dimensions().entrySet().stream()
                         .map(entry -> new Dimension(
-                                entry.getKey().name,
+                                entry.getKey().name(),
                                 entry.getKey().intention,
                                 entry.getValue().evaluation(),
                                 gradeIt(entry.getValue()))).toList(),

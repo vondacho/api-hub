@@ -32,8 +32,6 @@ public class RegistrationService {
 
     private final Registry registry;
 
-    private final Supplier<LocalDateTime> currentDateTimeProvider;
-
     public RegistrationService(
             Receptionist receptionist,
             Parser parser,
@@ -41,8 +39,7 @@ public class RegistrationService {
             Overlayer scoreOverlayer,
             Overlayer componentOverlayer,
             Revisor revisor,
-            Registry registry,
-            Supplier<LocalDateTime> currentDateTimeProvider) {
+            Registry registry) {
 
         this.receptionist = receptionist;
         this.parser = parser;
@@ -51,7 +48,6 @@ public class RegistrationService {
         this.componentOverlayer = componentOverlayer;
         this.revisor = revisor;
         this.registry = registry;
-        this.currentDateTimeProvider = currentDateTimeProvider;
     }
 
     public Try<State> submit(URI candidate) {

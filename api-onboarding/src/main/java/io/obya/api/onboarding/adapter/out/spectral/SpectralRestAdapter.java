@@ -45,7 +45,7 @@ public class SpectralRestAdapter implements ScorerDelegate {
         var dimensions = new HashMap<Scorecard.Dimension, Score>();
         data.getScorecard().getDimensions().forEach(it ->
                 dimensions.put(
-                        Scorecard.Dimension.valueOf(it.getName()),
+                        Scorecard.Dimension.valueOf(it.getName().name()),
                         new Score(it.getScore().intValue())));
         return new Scorecard(new Score(data.getScorecard().getScore().intValue()), dimensions);
     }

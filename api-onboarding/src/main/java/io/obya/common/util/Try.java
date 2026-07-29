@@ -180,7 +180,7 @@ public sealed interface Try<T> permits Try.Success, Try.Partial, Try.Failure {
       if (getValue().isPresent()) return this;
       try {
          Try<T> inner = recovery.apply(getExceptions());
-         List<Exception> merged = merge(getExceptions(), inner.getExceptions());
+         List<Exception> merged = inner.getExceptions();
          Optional<T> innerVal = inner.getValue();
          return innerVal.map(val -> merged.isEmpty() ? new Success<>(val) : new Partial<>(val, merged))
                  .orElseGet(() -> new Failure<>(merged));
@@ -197,7 +197,7 @@ public sealed interface Try<T> permits Try.Success, Try.Partial, Try.Failure {
       if (getValue().isPresent()) return this.flatMap(_ -> recovery.apply(getExceptions()));
       try {
          Try<U> inner = recovery.apply(getExceptions());
-         List<Exception> merged = merge(getExceptions(), inner.getExceptions());
+         List<Exception> merged = inner.getExceptions();
          Optional<U> innerVal = inner.getValue();
          return innerVal.map(val -> merged.isEmpty() ? new Success<>(val) : new Partial<>(val, merged))
                  .orElseGet(() -> new Failure<>(merged));

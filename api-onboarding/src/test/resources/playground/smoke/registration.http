@@ -3,7 +3,7 @@ POST http://{{host}}:{{port}}{{path}}/registrations/123/overlay
 Content-Type: application/json
 
 {
-  "source": "file:///src/test/resources/e2e/test.overlay.yaml"
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/oai/valid.overlay.yaml"
 }
 
 ### Valid implementing request
@@ -25,7 +25,7 @@ POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/valid_candidate.openapi.yaml"
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/oas/valid_candidate.openapi.yaml"
 }
 
 ### Valid request - but missing non-required info
@@ -33,7 +33,7 @@ POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/valid_candidate_missing_non_required_info.openapi.yaml"
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/oas/valid_candidate_missing_non_required_info.openapi.yaml"
 }
 
 ### Invalid request - missing required info
@@ -41,7 +41,7 @@ POST http://{{host}}:{{port}}{{path}}/registrations
 Content-Type: application/json
 
 {
-  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/invalid_candidate_missing_required_info.openapi.yaml"
+  "source": "file:///Users/olivier/Labor/github/my-api-portal/api-onboarding/src/test/resources/api/examples/oas/invalid_candidate_missing_required_info.openapi.yaml"
 }
 
 ### Valid request - but uri does not exist

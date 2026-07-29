@@ -284,6 +284,14 @@ components:
               name:
                 type: string
                 description: "Name of the scoring dimension"
+                enum:
+                  - 'FC'
+                  - 'SEC'
+                  - 'DX'
+                  - 'MR'
+                  - 'ARAX'
+                  - 'AU'
+                  - 'AID'
               intent:
                 type: string
                 description: "Intent of the scoring dimension"

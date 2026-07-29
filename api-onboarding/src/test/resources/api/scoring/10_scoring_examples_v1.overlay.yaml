@@ -47,7 +47,7 @@ actions:
           valid-candidate-uri:
             description: 'A valid candidate submission example from a local file'
             value:
-              source: 'file:///src/test/resources/api/examples/valid_candidate.openapi.yaml'
+              source: 'file:///oas/valid_candidate.openapi.yaml'
               contract: OPENAPI
 
           invalid-candidate-missing-uri:
@@ -68,24 +68,24 @@ actions:
           candidate-scored:
             description: 'A valid candidate with a quality score'
             value:
-              source: 'file:///src/test/resources/api/examples/valid_candidate.openapi.yaml'
+              source: 'file:///oas/valid_candidate.openapi.yaml'
               scorecard:
                 score: 74
                 grade: "A-"
                 dimensions:
-                  - name: "FC - Foundational Compliance"
+                  - name: "FC"
                     intent: "Base layer of spec validity and structural soundness"
                     score: 99
                     grade: "A+"
-                  - name: "SEC - Security"
+                  - name: "SEC"
                     intent: "Trust, risk posture, and security compliance"
                     score: 100
                     grade: "A+"
-                  - name: "DX - Developer Experience"
+                  - name: "DX"
                     intent: "Clarity, completeness, and ingestion readiness for developers and tooling"
                     score: 66
                     grade: "B"
-                  - name: "MR - Mock Readiness"
+                  - name: "MR"
                     intent: "Ease of creating mock servers"
                     score: 85
                     grade: "A+"

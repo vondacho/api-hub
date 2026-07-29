@@ -164,7 +164,7 @@ Feature: API specification onboarding
 
   Scenario: Updating an existing revision using an overlay registers a new revision
     Given the registry holds spec-456 named "petstore" in "platform" at v1 1.0.0
-    When applying overlay oai/test.overlay.yaml to spec-456 on 2026-07-01
+    When applying overlay oai/valid.overlay.yaml to spec-456 on 2026-07-01
     Then the overlaying succeeds
     And the specification id is spec-123
     And the specification status is REGISTERED
