@@ -1,0 +1,56 @@
+@startuml api-portal-readme-architecture-c4
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title My API Portal — Container Diagram (C4 model, as described in README)
+
+LAYOUT_WITH_LEGEND()
+
+' ============================================================
+' External actors / systems (referenced by the Flows section)
+' ============================================================
+System_Ext(git, "Git", "Registered codebase repositories")
+System_Ext(platform, "Deployment Platform", "Runtime target that hosts deployed API implementations")
+Person_Ext(subscribers, "Subscribers", "Parties notified about revision lifecycle changes")
+
+' ============================================================
+' Containers — one per README subsection, each tagged with
+' the technology named in the README ("based on ...")
+' ============================================================
+System_Boundary(apiPortal, "My API Portal") {
+
+  Container(onboarding, "Onboarding", "Spring Boot, REST API", "Submits API specifications for onboarding; validates and scores candidates before effective registration.")
+
+  Container(scoring, "Scoring", "Spring Boot, Spectral, Jentic", "Evaluates API specifications against a set of design rules.")
+
+  Container(registry, "Registry", "Strapi", "Persists validated and scored API specifications.")
+
+  Container(catalog, "Catalog", "Astro.js", "Web catalog view with list and search capabilities.")
+
+  Container(monitoring, "Monitoring", "Spring Boot, REST API + web view", "Observes deployments, injects endpoint metrics and implementation metadata into registered specs, alerts subscribers, supports change management.")
+
+  Container(discovery, "Discovery", "Spring Boot", "Hooks commits on registered codebase repositories; orders onboarding of new revisions.")
+}
+
+' ============================================================
+' Relationships — exactly as listed under README > Relationships
+' ============================================================
+Rel(onboarding, registry, "Register", "REST")
+Rel(onboarding, scoring, "Score", "REST")
+Rel(monitoring, registry, "Read", "REST")
+Rel(monitoring, onboarding, "Implement", "REST")
+Rel(monitoring, onboarding, "Deprecate", "REST")
+Rel(discovery, onboarding, "Submit", "REST")
+Rel(discovery, git, "Discover", "HTTP")
+Rel(catalog, registry, "Read", "REST")
+
+' ============================================================
+' Events — exactly as listed under README > Events,
+' wired per the Flows section
+' ============================================================
+Rel(onboarding, monitoring, "RevisionRegistered", "Event")
+Rel(platform, monitoring, "ComponentDeployed", "Event")
+Rel(monitoring, subscribers, "RevisionDeprecated / RevisionImplemented / SpecificationDiscovered", "Event")
+
+SHOW_LEGEND()
+
+@enduml

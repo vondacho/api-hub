@@ -1,4 +1,5 @@
 # My API Portal
+
 A system to support API management. It provides the following features:
 
 - Onboarding (REST/Async/SOAP/GraphQL)
@@ -6,7 +7,7 @@ A system to support API management. It provides the following features:
 - Catalog
 - Scoring
 - Monitoring
-- Crawling
+- Discovery
 - Mocking
 - MCP wrapping
 - MCP registry
@@ -15,6 +16,8 @@ A system to support API management. It provides the following features:
 ## Architecture
 The system is supported by a micro-services architecture where every service is accountable
 for one feature.
+
+[Architecture diagram](doc/arch/api_portal_readme_architecture_c4.png)
 
 ### Onboarding component
 This component provides a REST API to submit API specifications for onboarding. Every candidate is validated
@@ -34,10 +37,10 @@ This component provides a web catalog view with list and search capabilities. It
 This component observes deployments and then inject metadata about endpoint metrics and implementing component into the
 registered API specifications.
 
-It provides provides both a REST API and a web view to administrate the registered API specifications.
-It notifies subscribers about new versions and supports change management.
+It provides both a REST API and a web view to administrate the registered API specifications.
+It alerts subscribers about new versions and supports change management.
 
-### Crawler component
+### Discovery component
 This component hooks commits done on registered codebase repositories where API specifications are stored, and then orders
 the onboarding of new revisions.
 
@@ -59,14 +62,41 @@ Contract-driven and Test-driven practices are first citizens for the implementat
 
 ## Implementation
 The project is organised as a mono-repository of project modules with their own deployment workflow.
-
 The application framworks are SpringBoot, NodeJs, Angular.
-
 Communication is done synchronoulsy and asynchronously, and mainly involving REST APIs and messaging.
-
 Observability involve metrics and tracing, and is based on OpenTelemetry.
-
 The infrastructure as code applies to a local machine, a corporate cluster, or any cloud provider.
+
+### Flows
+- One commit done on one registered codebase should trigger an event consumed by Discovery,
+then Discovery submit URI to Onboarding.
+- Onboarding registers validated specifications revisions into Registry.
+- One deployment should trigger an event consumed by Monitoring,
+then Monitoring submit the implementation to Onboarding.
+- One new revision registered by Onboarding should trigger an event consumed by Monitoring,
+then Monitoring alerts the subscribers.
+- One revision deprecated by Monitoring should be reflected inside Registry,
+and then Monitoring alerts the subscribers.
+
+### Relationships
+- Onboarding -rest-> Registry: register
+- Onboarding -rest-> Scoring: score
+- Monitoring -rest-> Registry: read
+- Monitoring -rest-> Onboarding: implement
+- Monitoring -rest-> Onboarding: deprecate 
+- Discovery -rest-> Onboarding: submit
+- Discovery -http-> Git
+- Git -http-> Discovery: discover
+- Catalog -rest-> Registry: read
+- Onboarding -event-> Monitoring: RevisionRegistered
+- Platform -event-> Monitoring: ComponentDeployed
+
+### Events
+- RevisionRegistered
+- RevisionDeprecated
+- RevisionImplemented
+- ComponentDeployed
+- SpecificationDiscovered
 
 ## Testing
 The testing strategy includes every test taxonomy. Testing activity is present before, during, and after the realisation.
