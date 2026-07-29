@@ -22,14 +22,14 @@ public class ScorerConfig {
     public ScorerDelegate dummyScorer() {
         return new ScorerDelegate() {
             @Override
-            public Try<Scorecard> score(URI source, Contract contract) {
+            public Try<Scorecard> score(URI source, Contract.Type contract) {
                 return Try.success(new Scorecard(
                         new Score(74),
                         Map.of(FC, new Score(99))));
             }
 
             @Override
-            public Try<Scorecard> score(String source, Contract contract) {
+            public Try<Scorecard> score(String source, Contract.Type contract) {
                 return Try.success(new Scorecard(
                         new Score(55),
                         Map.of(FC, new Score(99))));

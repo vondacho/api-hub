@@ -36,7 +36,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class ResilientStrapiRegistryRestAdapterTest {
 
     @Container
-    static MicrocksContainer strapiContainer = new MicrocksContainer(
+    static MicrocksContainer microcksContainer = new MicrocksContainer(
             DockerImageName.parse("quay.io/microcks/microcks-uber:latest"))
                 .withDebugLogLevel();
 
@@ -45,17 +45,17 @@ class ResilientStrapiRegistryRestAdapterTest {
 
     @BeforeAll
     static void importSpecification() throws MicrocksException, IOException {
-        strapiContainer.start();
-        strapiContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
+        microcksContainer.start();
+        microcksContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
                 new File("target/test-classes/api/strapi/resolved.specification_v1.openapi.yaml"));
-        strapiContainer.importAsSecondaryArtifact(
+        microcksContainer.importAsSecondaryArtifact(
                 new File("target/test-classes/api/strapi/specification_v1.metadata.faulty.yaml"));
     }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("registry.adapter", () -> "strapi");
-        registry.add("strapi.base-url", () -> strapiContainer
+        registry.add("strapi.base-url", () -> microcksContainer
                 .getRestMockEndpoint("API Registry - Specification", "v1")
                 .replaceAll("\\s", "+"));
     }

@@ -1,4 +1,4 @@
-package io.obya.api.onboarding.adapter.in.web;
+package io.obya.api.onboarding.appl.usecase;
 
 import io.github.microcks.testcontainers.Assertions;
 import io.github.microcks.testcontainers.MicrocksContainer;

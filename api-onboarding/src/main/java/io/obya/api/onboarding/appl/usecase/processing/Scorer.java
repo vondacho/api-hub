@@ -24,8 +24,8 @@ public class Scorer implements Processor<State> {
             .filter(st -> nonNull(st::contract), MISSING_DATA.failure( "state.contract"), true)
             .flatMap(st -> {
                 final Try<Scorecard> scored = nonNull(st::source) ?
-                        delegate.score(st.source(), st.contract()) :
-                        delegate.score(st.body().get(), st.contract());
+                        delegate.score(st.source(), st.contract().type()) :
+                        delegate.score(st.body().get(), st.contract().type());
 
                 if (scored.isFailure()) {
                     return scored.recoverWithOther(e ->

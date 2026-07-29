@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-
+#
+# Workaround for this known issue: OpenAPITools/openapi-generator#19019
+#
 GENERATED_API_DIR="${1:?usage: script.sh <generated_api_dir>}"
 
 find "$GENERATED_API_DIR" -name "*.java" -exec \

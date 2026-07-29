@@ -48,6 +48,7 @@ actions:
             description: 'A valid candidate submission example from a local file'
             value:
               source: 'file:///src/test/resources/api/examples/valid_candidate.openapi.yaml'
+              contract: OPENAPI
 
           invalid-candidate-missing-uri:
             description: A candidate submission with a missing URI

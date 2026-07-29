@@ -55,8 +55,20 @@ components:
           type: string
           format: uri
           description: "URI pointing to the specContent"
-      required:
-        - source
+        contract:
+          $ref: '#/components/schemas/Contract'
+        body:
+          type: string
+          description: "The specContent"
+
+    Contract:
+      type: string
+      description: "Specification contract type"
+      enum:
+        - OPENAPI
+        - ASYNCAPI
+        - GRAPHQLS
+      example: OPENAPI
 
     CandidateProcessed:
       type: object

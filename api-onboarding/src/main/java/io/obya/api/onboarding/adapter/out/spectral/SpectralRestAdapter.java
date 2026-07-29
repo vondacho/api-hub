@@ -26,14 +26,19 @@ public class SpectralRestAdapter implements ScorerDelegate {
     }
 
     @Override
-    public Try<Scorecard> score(URI source, Contract contract) {
-        return HttpExchange.execute(() -> scoringApi.scoreCandidate(new Candidate(source)),
-                body -> Try.success(from(body)));
+    public Try<Scorecard> score(URI source, Contract.Type contract) {
+        return HttpExchange.execute(() -> scoringApi.scoreCandidate(new Candidate()
+                        .source(source)
+                        .contract(io.obya.api.onboarding.adapter.out.scorer.model.Contract.valueOf(contract.name()))),
+                b -> Try.success(from(b)));
     }
 
     @Override
-    public Try<Scorecard> score(String source, Contract contract) {
-        return score(URI.create(source), contract);
+    public Try<Scorecard> score(String body, Contract.Type contract) {
+        return HttpExchange.execute(() -> scoringApi.scoreCandidate(new Candidate()
+                        .body(body)
+                        .contract(io.obya.api.onboarding.adapter.out.scorer.model.Contract.valueOf(contract.name()))),
+                b -> Try.success(from(b)));
     }
 
     private Scorecard from(CandidateProcessed data) {

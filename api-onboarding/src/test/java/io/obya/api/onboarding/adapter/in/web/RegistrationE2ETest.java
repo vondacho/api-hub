@@ -46,11 +46,15 @@ class RegistrationE2ETest {
     @BeforeAll
     static void importSpecification() throws MicrocksException, IOException {
         microcksContainer.start();
-        microcksContainer.importAsMainArtifact(new File( // FIXME: Examples should be a secondary artefact
+        microcksContainer.importAsMainArtifact(new File(
+                // FIXME: Examples should be a secondary artefact
+                // FIXME: Use only one happy path example to play the whole chain
                 "target/test-classes/api/registration/resolved.registration_v1.openapi.yaml"));
-        microcksContainer.importAsMainArtifact(new File( // FIXME: Examples should be a secondary artefact
+        microcksContainer.importAsMainArtifact(new File(
+                // FIXME: Examples should be a secondary artefact
                 "target/test-classes/api/strapi/resolved.specification_v1.openapi.yaml"));
-        microcksContainer.importAsMainArtifact(new File( // FIXME: Examples should be a secondary artefact
+        microcksContainer.importAsMainArtifact(new File(
+                // FIXME: Examples should be a secondary artefact
                 "target/test-classes/api/scoring/resolved.scoring_v1.openapi.yaml"));
         microcksContainer.importAsSecondaryArtifact(new File(
                 "target/test-classes/api/strapi/specification_v1.metadata.yaml"));

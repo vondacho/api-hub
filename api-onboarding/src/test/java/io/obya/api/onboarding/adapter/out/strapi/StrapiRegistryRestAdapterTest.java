@@ -32,7 +32,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class StrapiRegistryRestAdapterTest {
 
     @Container
-    static MicrocksContainer strapiContainer = new MicrocksContainer(
+    static MicrocksContainer microcksContainer = new MicrocksContainer(
             DockerImageName.parse("quay.io/microcks/microcks-uber:latest"))
                 .withDebugLogLevel();
 
@@ -41,17 +41,17 @@ class StrapiRegistryRestAdapterTest {
 
     @BeforeAll
     static void importSpecification() throws MicrocksException, IOException {
-        strapiContainer.start();
-        strapiContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
+        microcksContainer.start();
+        microcksContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
                 new File("target/test-classes/api/strapi/resolved.specification_v1.openapi.yaml"));
-        strapiContainer.importAsSecondaryArtifact(
+        microcksContainer.importAsSecondaryArtifact(
                 new File("target/test-classes/api/strapi/specification_v1.metadata.yaml"));
     }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("registry.adapter", () -> "strapi");
-        registry.add("strapi.base-url", () -> strapiContainer
+        registry.add("strapi.base-url", () -> microcksContainer
                 .getRestMockEndpoint("API Registry - Specification", "v1")
                 .replaceAll("\\s", "+"));
     }
@@ -113,6 +113,6 @@ class StrapiRegistryRestAdapterTest {
     }
 
     private void printLogs() {
-        log.info("LOGS\n-------\n" + strapiContainer.getLogs() + "\n");
+        log.info("LOGS\n-------\n" + microcksContainer.getLogs() + "\n");
     }
 }

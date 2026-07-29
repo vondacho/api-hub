@@ -58,7 +58,8 @@ class RegistrationContractTest {
     @BeforeAll
     static void importSpecification() throws MicrocksException, IOException {
         microcksContainer.start();
-        microcksContainer.importAsMainArtifact( // FIXME: Examples should be a secondary artefact
+        microcksContainer.importAsMainArtifact(
+                // FIXME: Examples should be secondary artefacts
                 new File("target/test-classes/api/registration/resolved.registration_v1.openapi.yaml"));
     }
 

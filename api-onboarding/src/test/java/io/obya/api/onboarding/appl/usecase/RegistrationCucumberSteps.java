@@ -66,11 +66,11 @@ public class RegistrationCucumberSteps {
             return Try.success(nonNull(specification.id()) ? specification.id() : new SpecificationId(REGISTERED_ID));
         });
         // Default: scoring succeeds with a good grade.
-        when(scorer.score(any(URI.class), any(Contract.class))).thenAnswer(invocation -> {
+        when(scorer.score(any(URI.class), any(Contract.Type.class))).thenAnswer(invocation -> {
             URI source = invocation.getArgument(0);
             return Try.success(scorecardFor(source.toString()));
         });
-        when(scorer.score(anyString(), any(Contract.class))).thenReturn(Try.success(scorecardFor("test")));
+        when(scorer.score(anyString(), any(Contract.Type.class))).thenReturn(Try.success(scorecardFor("test")));
         result = null;
     }
 
@@ -105,9 +105,9 @@ public class RegistrationCucumberSteps {
 
     @Given("the scorer cannot score specifications")
     public void theScorerCannotScoreSpecifications() {
-        when(scorer.score(any(URI.class), any(Contract.class))).thenReturn(new Try.Failure<>(
+        when(scorer.score(any(URI.class), any(Contract.Type.class))).thenReturn(new Try.Failure<>(
                 List.of(DEPENDENCY_NOT_AVAILABLE.failure("scorer", "unavailable").get())));
-        when(scorer.score(anyString(), any(Contract.class))).thenReturn(new Try.Failure<>(
+        when(scorer.score(anyString(), any(Contract.Type.class))).thenReturn(new Try.Failure<>(
                 List.of(DEPENDENCY_NOT_AVAILABLE.failure("scorer", "unavailable").get())));
     }
 

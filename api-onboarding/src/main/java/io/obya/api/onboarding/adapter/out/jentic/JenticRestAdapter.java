@@ -18,7 +18,7 @@ import static io.obya.api.onboarding.domain.model.Scorecard.Dimension.*;
 public class JenticRestAdapter implements ScorerDelegate {
 
     @Override
-    public Try<Scorecard> score(URI source, Contract contract) {
+    public Try<Scorecard> score(URI source, Contract.Type contract) {
         return Try.success(new Scorecard(
                 new Score(74),
                 Map.of(
@@ -33,7 +33,7 @@ public class JenticRestAdapter implements ScorerDelegate {
     }
 
     @Override
-    public Try<Scorecard> score(String source, Contract contract) {
+    public Try<Scorecard> score(String source, Contract.Type contract) {
         return Try.success(new Scorecard(
                 new Score(71),
                 Map.of(

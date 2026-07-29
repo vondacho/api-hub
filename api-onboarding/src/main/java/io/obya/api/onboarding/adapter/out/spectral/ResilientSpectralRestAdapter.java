@@ -20,7 +20,7 @@ public class ResilientSpectralRestAdapter extends SpectralRestAdapter {
     @Bulkhead(name = "spectral")
     @Retry(name = "spectral")
     @Override
-    public Try<Scorecard> score(URI source, Contract contract) {
+    public Try<Scorecard> score(URI source, Contract.Type contract) {
         return super.score(source, contract);
     }
 
@@ -28,7 +28,7 @@ public class ResilientSpectralRestAdapter extends SpectralRestAdapter {
     @Bulkhead(name = "spectral")
     @Retry(name = "spectral")
     @Override
-    public Try<Scorecard> score(String source, Contract contract) {
+    public Try<Scorecard> score(String source, Contract.Type contract) {
         return super.score(source, contract);
     }
 }
