@@ -29,11 +29,25 @@ public interface DomainExamples {
         }
     }
 
+    interface Components {
+        Supplier<Component> petstoreQuarkus = () -> new Component("petstore-quarkus", Revision.V100);
+    }
+
+    interface Contracts {
+        Supplier<Contract> openApiV30 = () -> Contract.from(Contract.Version.OPENAPI_V30);
+        Supplier<Contract> asyncApiV30 = () -> Contract.from(Contract.Version.ASYNCAPI_V30);
+    }
+
     interface Scores {
+        int acceptableEvaluation = Score.Grade.A.min;
+        int tooLowEvaluation = Score.Grade.D.min;
+
         Function<Integer, Scorecard> fundationalCompliance = (fc) -> new Scorecard(
                 new Score(fc),
                 Map.of(Scorecard.Dimension.FC, new Score(fc)));
 
         Supplier<Scorecard> scorecard = () -> fundationalCompliance.apply(74);
+        Supplier<Scorecard> acceptable = () -> Scorecard.globalOf(acceptableEvaluation);
+        Supplier<Scorecard> tooLow = () -> Scorecard.globalOf(tooLowEvaluation);
     }
 }

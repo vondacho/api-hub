@@ -31,7 +31,7 @@ public class ParameterTypes {
 
     @ParameterType(".*\\.yaml")
     public URI uri(String filename) throws Exception {
-        return UsecaseExamples.Sources.uriOf(filename);
+        return UsecaseExamples.Sources.classpathOf(filename);
     }
 
     @ParameterType("v\\d{1}")

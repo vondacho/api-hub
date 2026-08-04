@@ -25,7 +25,7 @@ public class Overlayer implements Processor<State> {
     }
 
     public static Overlayer from(URI overlay, BiFunction<State, List<Exception>, Object> mapping) {
-        URIReader[] readers = { new URIFileReader(), new URIHttpReader() };
+        URIReader[] readers = { new ClasspathResourceReader(), new URIHttpReader(), new URIFileReader() };
         return new Overlayer(overlay, new OverlayV10Parser(readers, mapping));
     }
 

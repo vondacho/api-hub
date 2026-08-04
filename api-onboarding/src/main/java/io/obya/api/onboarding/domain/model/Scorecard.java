@@ -26,6 +26,10 @@ public record Scorecard(Score global, Map<Dimension, Score> dimensions) {
         return new Scorecard(Score.undefined(), Map.of());
     }
 
+    public static Scorecard globalOf(int evaluation) {
+        return new Scorecard(new Score(evaluation), Map.of());
+    }
+
     public boolean isUndefined() {
         return global.isUndefined() && dimensions.isEmpty();
     }

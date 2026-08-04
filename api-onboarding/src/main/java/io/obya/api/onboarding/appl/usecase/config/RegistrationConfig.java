@@ -26,8 +26,8 @@ public class RegistrationConfig {
 
     private final URIReader[] readers = {
             new ClasspathResourceReader(),
-            new URIFileReader(),
-            new URIHttpReader()
+            new URIHttpReader(),
+            new URIFileReader()
     };
 
     @Bean

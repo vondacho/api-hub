@@ -7,6 +7,7 @@ import io.obya.common.util.Try;
 
 import java.util.List;
 
+import static io.obya.api.onboarding.appl.usecase.processing.Validator.nonNull;
 import static io.obya.api.onboarding.domain.model.Metadata.META_API_REVISION_KEY;
 import static io.obya.api.onboarding.domain.model.Violation.Code.*;
 import static java.util.Objects.isNull;
@@ -21,18 +22,21 @@ public class Revisor implements Processor<State> {
 
     @Override
     public Try<State> process(Try<State> state) {
-        return state.flatMap(st -> {
-            final Version major = st.info().version();
+        return state
+            .filter(st -> nonNull(st::info), MISSING_DATA.failure("state.info"), true)
+            .filter(st -> nonNull(st::metadata), MISSING_DATA.failure("state.metadata"), true)
+            .flatMap(st -> {
+                final Version major = st.info().version();
 
-            Try<Revision> latest = registry
-                    .at(st.metadata().name(), st.metadata().productName(), major)
-                    .map(spec -> spec.metadata().revision());
+                Try<Revision> latest = registry
+                        .at(st.metadata().name(), st.metadata().productName(), major)
+                        .map(spec -> spec.metadata().revision());
 
-            if (latest.isFailure()) {
-                return latest.recoverWithOther(_ -> enforcer().process(state));
-            }
-            return latest.flatMap(r -> enforcer(r).process(state));
-        });
+                if (latest.isFailure()) {
+                    return latest.recoverWithOther(_ -> enforcer().process(state));
+                }
+                return latest.flatMap(r -> enforcer(r).process(state));
+            });
     }
 
     private Processor<State> enforcer() {
@@ -44,7 +48,7 @@ public class Revisor implements Processor<State> {
                 return new Try.Partial<>(alignRevisionOn(st, Revision.from(st.info().version())),
                         List.of(REVISION_NOT_ALIGNED.failure(META_API_REVISION_KEY, st.info().version()).get()));
             }
-            return Try.success(st);
+            return Try.success(alignRevisionOn(st, st.metadata().revision()));
         });
     }
 
@@ -61,10 +65,14 @@ public class Revisor implements Processor<State> {
                 return new Try.Partial<>(alignRevisionOn(st, currentLatest.next()),
                     List.of(REVISION_AUTO_INCREMENTED.failure(META_API_REVISION_KEY, currentLatest.next()).get()));
             }
-            return Try.success(st);
+            return Try.success(alignRevisionOn(st, st.metadata().revision()));
         });
     }
 
+    /**
+     * Assigns the revision the candidate will be registered under and resets its implementation:
+     * a new revision always requires a fresh component association.
+     */
     private State alignRevisionOn(State st, Revision currentLatest) {
         return st.metadata(new Metadata(
             st.metadata().name(),

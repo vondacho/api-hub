@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: Unnamed API
-  description: A spec intentionally missing the required onboarding extension fields.
-  version: 1.0.0
+  description: A valid OpenAPI document carrying no onboarding metadata extension at all.
+  version: v1
 servers:
   - url: http://localhost:8080
 paths:

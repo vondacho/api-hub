@@ -1,6 +1,7 @@
 package io.obya.api.onboarding.adapter.out.strapi.playground;
 
 import io.obya.api.onboarding.adapter.out.strapi.StrapiRegistryRestAdapter;
+import io.obya.api.onboarding.appl.usecase.UsecaseExamples;
 import io.obya.api.onboarding.domain.model.*;
 import io.obya.common.util.Try;
 import org.apache.commons.lang3.RandomUtils;
@@ -14,7 +15,6 @@ import org.springframework.web.client.RestClientException;
 import java.util.List;
 
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.bodyOf;
-import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.validCandidateUri;
 import static io.obya.api.onboarding.domain.model.DomainExamples.Specifications.specificationOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
@@ -48,7 +48,7 @@ class StrapiRegistryPlaygroundWithRestAdapterTest {
                     "petstore", "platform",
                     Version.V1,
                     Revision.from("1.0." + RandomUtils.secure().randomInt()),
-                    bodyOf(validCandidateUri.get()));
+                    bodyOf(UsecaseExamples.Sources.Oas.validCandidate.get()));
 
             Try<SpecificationId> result = adapter.register(specification);
             assertThat(result.isSuccess()).isTrue();

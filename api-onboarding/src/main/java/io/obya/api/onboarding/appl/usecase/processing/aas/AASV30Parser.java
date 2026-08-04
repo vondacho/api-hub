@@ -1,12 +1,14 @@
 package io.obya.api.onboarding.appl.usecase.processing.aas;
 
 import com.asyncapi.v3._0_0.model.AsyncAPI;
+import com.asyncapi.v3._0_0.model.info.Info;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.obya.api.onboarding.appl.usecase.processing.reader.URIReader;
-import io.obya.api.onboarding.domain.model.Version;
+
+import java.util.Optional;
 
 import static io.obya.api.onboarding.domain.model.Metadata.*;
 
@@ -40,31 +42,49 @@ public class AASV30Parser extends AASParser<AsyncAPI> {
 
     @Override
     protected String getName(AsyncAPI model) {
-        return (String) model.getInfo().getExtensionFields().get(META_API_NAME_KEY);
+        return (String) Optional.of(model.getInfo())
+                .map(Info::getExtensionFields)
+                .map(fields -> fields.get(META_API_NAME_KEY))
+                .orElse(null);
     }
 
     @Override
     protected String getRevision(AsyncAPI model) {
-        return (String) model.getInfo().getExtensionFields().get(META_API_REVISION_KEY);
+        return (String) Optional.of(model.getInfo())
+                .map(Info::getExtensionFields)
+                .map(fields -> fields.get(META_API_REVISION_KEY))
+                .orElse(null);
     }
 
     @Override
     protected String getBundleName(AsyncAPI model) {
-        return (String) model.getInfo().getExtensionFields().get(META_BUNDLE_NAME_KEY);
+        return (String) Optional.of(model.getInfo())
+                .map(Info::getExtensionFields)
+                .map(fields -> fields.get(META_BUNDLE_NAME_KEY))
+                .orElse(null);
     }
 
     @Override
     protected String getProductName(AsyncAPI model) {
-        return (String) model.getInfo().getExtensionFields().get(META_PRODUCT_NAME_KEY);
+        return (String) Optional.of(model.getInfo())
+                .map(Info::getExtensionFields)
+                .map(fields -> fields.get(META_PRODUCT_NAME_KEY))
+                .orElse(null);
     }
 
     @Override
     protected String getComponentName(AsyncAPI model) {
-        return (String) model.getInfo().getExtensionFields().get(META_COMPONENT_NAME_KEY);
+        return (String) Optional.of(model.getInfo())
+                .map(Info::getExtensionFields)
+                .map(fields -> fields.get(META_COMPONENT_NAME_KEY))
+                .orElse(null);
     }
 
     @Override
     protected String getComponentVersion(AsyncAPI model) {
-        return (String) model.getInfo().getExtensionFields().get(META_COMPONENT_REVISION_KEY);
+        return (String) Optional.of(model.getInfo())
+                .map(Info::getExtensionFields)
+                .map(fields -> fields.get(META_COMPONENT_REVISION_KEY))
+                .orElse(null);
     }
 }

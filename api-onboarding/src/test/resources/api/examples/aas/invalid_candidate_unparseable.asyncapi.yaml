@@ -1,0 +1,6 @@
+asyncapi: 3.0.0
+# info must be an object; a scalar cannot be bound to the AsyncAPI model.
+info: not-an-info-object
+channels:
+  notifications:
+    address: platform/notifications

@@ -1,8 +1,8 @@
 asyncapi: 3.0.0
 info:
   title: Notification API
-  description: A sample AsyncAPI 3.0 spec for end-to-end test fixtures.
-  version: v1
+  description: A sample AsyncAPI spec whose info.version is not the expected vN major version.
+  version: 1.0.0
   x-api-name: notification
   x-bundle-name: notification
   x-product-name: platform

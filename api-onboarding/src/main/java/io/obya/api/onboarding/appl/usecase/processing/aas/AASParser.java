@@ -77,6 +77,7 @@ abstract class AASParser<M> implements Processor<State> {
 
     protected Try<State> setMetadata(State state, M model) {
         return Try.success(new Metadata(
+
                         getName(model),
                         ofNullable(getRevision(model))
                                 .map(s -> Revision.from(s, MALFORMED_REVISION.failure(META_API_REVISION_KEY, "semver")))

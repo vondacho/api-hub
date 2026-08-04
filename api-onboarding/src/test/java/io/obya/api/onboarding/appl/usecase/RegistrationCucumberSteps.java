@@ -86,7 +86,7 @@ public class RegistrationCucumberSteps {
     public void theRegistryHoldsSpecificationFor(SpecificationId id, String name, String productName, Version version, Revision revision) throws Exception {
         final Specification specification = specificationOf(
                 id, name, productName, version, revision,
-                bodyOf(UsecaseExamples.Sources.validCandidateUri.get()));
+                bodyOf(UsecaseExamples.Sources.Oas.validCandidate.get()));
         when(registry.at(id)).thenReturn(Try.success(specification));
         when(registry.at(name, productName, version)).thenReturn(Try.success(specification));
         when(registry.at(name, productName, version, revision)).thenReturn(Try.success(specification));

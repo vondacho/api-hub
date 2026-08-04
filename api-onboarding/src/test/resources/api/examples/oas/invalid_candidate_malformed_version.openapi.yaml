@@ -1,8 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Unnamed API
-  description: A spec intentionally missing the required onboarding extension fields.
+  title: Petstore API
+  description: A sample API whose info.version is not the expected vN major version.
   version: 1.0.0
+  x-api-name: petstore
+  x-bundle-name: petstore
+  x-product-name: platform
 servers:
   - url: http://localhost:8080
 paths:

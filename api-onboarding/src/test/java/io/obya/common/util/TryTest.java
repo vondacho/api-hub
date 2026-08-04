@@ -203,7 +203,7 @@ class TryTest {
          RuntimeException e = new RuntimeException("e");
          Try<String> t = Try.<String>failure(e)
                  .recoverWith(exs -> Try.success("recovered"));
-         assertTrue(t.isPartial());
+         assertTrue(t.isSuccess());
          assertEquals("recovered", t.getValue().get());
       }
    }

@@ -1,11 +1,10 @@
 openapi: 3.0.3
 info:
   title: Petstore API
-  description: A sample API missing the non-required x-bundle-name metadata extension.
+  description: A sample API omitting the optional x-api-revision, x-component-name and x-component-revision extensions.
   version: v1
   x-api-name: petstore
-  x-api-version: 1.0.0
-  x-bundle-name: platform
+  x-bundle-name: petstore
   x-product-name: platform
 servers:
   - url: http://localhost:8080

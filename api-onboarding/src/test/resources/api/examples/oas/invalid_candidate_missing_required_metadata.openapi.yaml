@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Petstore API
-  description: A sample API missing the required x-api-name metadata extension.
+  description: A sample API missing the required x-bundle-name metadata extension.
   version: v1
   x-api-name: petstore
   x-product-name: platform

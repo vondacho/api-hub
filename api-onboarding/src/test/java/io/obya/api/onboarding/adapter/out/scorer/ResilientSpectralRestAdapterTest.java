@@ -62,7 +62,7 @@ class ResilientSpectralRestAdapterTest {
     @Test
     void should_scoring_degrade_gracefully() {
         Try<Scorecard> result = scorer.score(
-                UsecaseExamples.Sources.bodyOf(UsecaseExamples.Sources.validCandidateUri.get()),
+                UsecaseExamples.Sources.bodyOf(UsecaseExamples.Sources.Oas.validCandidate.get()),
                 Contract.Type.OPENAPI);
         printLogs();
         assertThat(result.isSuccess()).isTrue();

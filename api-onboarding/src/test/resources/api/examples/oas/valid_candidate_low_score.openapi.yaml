@@ -4,7 +4,6 @@ info:
   description: A valid API whose mocked score falls under the minimal acceptance threshold.
   version: v1
   x-api-name: petstore
-  x-api-version: 1.0.0
   x-bundle-name: petstore
   x-product-name: platform
 servers:

@@ -67,7 +67,7 @@ public class RegistrationService {
                 .flatMap(registry::register);
 
         if (registered.isFailure()) {
-            return registered.recoverWithOther(_ -> scored);
+            return registered.recoverWithOther(e -> scored.flatMap(st -> new Try.Partial(st, e)));
         }
         return registered.flatMap(id ->
                 scored.map(st -> st.id(id).status(Status.REGISTERED)));
