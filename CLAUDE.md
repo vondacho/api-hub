@@ -60,14 +60,20 @@ The taxonomy is deliberate — match new tests to the right layer:
 ## Deployment — Helm (`helm/`)
 
 One standalone chart per component, mirroring the monorepo convention (no umbrella chart).
-`helm/api-onboarding/` exists; registry and scorer charts are still to come, so the chart
-defaults both outbound adapters to `dummy` and is deployable on its own. See `helm/README.md`.
+`helm/api-onboarding/` and `helm/api-portal/` exist; registry and scorer charts are still to
+come, so onboarding defaults both outbound adapters to `dummy` and each chart is deployable on
+its own. See `helm/README.md`.
 
 ```bash
 cd api-onboarding && docker build -t api-onboarding:dev .   # nerdctl --namespace k8s.io build … on containerd
+cd api-portal     && docker build -t api-portal:dev .
 helm upgrade --install api-onboarding helm/api-onboarding \
   -n my-api-portal --create-namespace -f helm/api-onboarding/values-local.yaml
+helm upgrade --install api-portal helm/api-portal \
+  -n my-api-portal --create-namespace -f helm/api-portal/values-local.yaml
 ```
+
+**api-onboarding**
 
 - **`-Dbundle.skip=true`** skips the `process-test-resources` spec bundling (the only Node/`npx`
   dependency in the build); the image build uses it so no Node toolchain is needed in the builder
@@ -76,6 +82,15 @@ helm upgrade --install api-onboarding helm/api-onboarding \
   Boot layers **over** the jar's `application.yaml` — only put overrides in `values.yaml`, never
   a duplicate of the whole file. Free-form additions go under `app.extraConfig`.
 - Probes use the Actuator health groups (`/actuator/health/{liveness,readiness}`).
+
+**api-portal**
+
+- Deployed as a **server-rendered** Node app (`output: 'server'` + `@astrojs/node` standalone on
+  port 4321), so its calls to `api-onboarding` happen over in-cluster DNS instead of from the
+  browser. Keep it that way — a static build would force exposing onboarding publicly.
+- Chart config flows through a ConfigMap consumed with `envFrom`; every `app.*` key becomes an
+  env var read server-side. Probes hit `/healthz` (`src/pages/healthz.ts`).
+- `values-local.yaml` enables a Traefik ingress at `http://api-portal.localhost`.
 
 ## api-registry (Strapi) & api-portal (Astro)
 

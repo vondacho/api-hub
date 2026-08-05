@@ -1,0 +1,114 @@
+# Default values for api-portal.
+# Tuned for a local single-node cluster (Rancher Desktop / Docker Desktop).
+
+replicaCount: 1
+
+image:
+  repository: api-portal
+  # Defaults to .Chart.AppVersion when empty.
+  tag: ""
+  # IfNotPresent so a locally built image is used without a registry push.
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  # Defaults to the fullname template when empty.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  # Must match the "app" user baked into api-portal/Dockerfile.
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 4321
+
+ingress:
+  enabled: false
+  # Empty uses the cluster's default IngressClass. Rancher Desktop ships
+  # "traefik" as the default.
+  className: ""
+  annotations: {}
+  hosts:
+    - host: api-portal.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    # No CPU limit: the Node server is bursty at startup and during SSR.
+    memory: 512Mi
+
+# Probes hit the /healthz route served by src/pages/healthz.ts.
+# Node boots fast, so the startup budget is much tighter than api-onboarding's.
+probes:
+  path: /healthz
+  startup:
+    enabled: true
+    initialDelaySeconds: 2
+    periodSeconds: 2
+    failureThreshold: 15
+  liveness:
+    enabled: true
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    periodSeconds: 5
+    failureThreshold: 3
+
+# ---------------------------------------------------------------------------
+# Application configuration.
+# Rendered into a ConfigMap and injected wholesale via envFrom. Astro reads
+# these server-side; nothing here reaches the browser unless a page renders it
+# deliberately, so this is the right place for in-cluster service URLs.
+# ---------------------------------------------------------------------------
+app:
+  # Base URL of the onboarding service, reached over in-cluster DNS. This is
+  # why the portal is server-rendered: the browser never needs to see it.
+  onboarding:
+    baseUrl: http://api-onboarding:8080
+
+  # Arbitrary extra entries, merged verbatim into the same ConfigMap and so
+  # injected as env vars too:
+  #   extraConfig:
+  #     LOG_LEVEL: debug
+  extraConfig: {}
+
+# Flags passed to the Node process, e.g. "--max-old-space-size=384".
+nodeOptions: ""
+
+# Additional raw environment variables (full valueFrom syntax available), e.g.
+#   - name: SOME_SECRET
+#     valueFrom:
+#       secretKeyRef: { name: portal, key: token }
+extraEnv: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

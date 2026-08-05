@@ -1,0 +1,21 @@
+apiVersion: v2
+name: api-portal
+description: API Catalogue web frontend — browse, search and view registered API specs
+type: application
+
+# Chart version. Bump on every change to the chart itself.
+version: 0.1.0
+
+# Version of api-portal shipped by default. Matches "version" in
+# api-portal/package.json and is used as the default image tag.
+appVersion: "0.0.1"
+
+keywords:
+  - astro
+  - catalogue
+  - api-governance
+home: https://github.com/obya/my-api-portal
+sources:
+  - https://github.com/obya/my-api-portal/tree/main/api-portal
+maintainers:
+  - name: Olivier von Dach

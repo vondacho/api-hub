@@ -1,0 +1,35 @@
+# Overrides for a locally built image on a single-node cluster
+# (Rancher Desktop / Docker Desktop).
+#
+#   helm upgrade --install api-portal helm/api-portal \
+#     -n my-api-portal --create-namespace \
+#     -f helm/api-portal/values-local.yaml
+
+image:
+  repository: api-portal
+  tag: dev
+  # The image is built straight into the node's image store, never pulled.
+  pullPolicy: Never
+
+# Rancher Desktop runs Traefik as the default IngressClass, so the portal is
+# reachable at http://api-portal.localhost without a port-forward.
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: api-portal.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+app:
+  # api-onboarding is deployed in the same namespace by its own chart.
+  onboarding:
+    baseUrl: http://api-onboarding:8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi

@@ -1,0 +1,22 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Server-rendered by @astrojs/node (standalone) on port 4321.
+
+Upstream:
+  onboarding -> {{ .Values.app.onboarding.baseUrl }}
+
+Browse the Catalogue:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "api-portal.fullname" . }} 4321:{{ .Values.service.port }}
+
+  then open http://localhost:4321
+{{- end }}
+
+Verify the release:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}
