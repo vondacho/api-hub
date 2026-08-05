@@ -1,0 +1,6 @@
+target/
+.mvn/
+.DS_Store
+*.iml
+.idea/
+.redocly.lint-ignore.yaml

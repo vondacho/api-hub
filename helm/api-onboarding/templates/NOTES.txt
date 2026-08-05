@@ -1,0 +1,23 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Outbound ports:
+  registry.adapter = {{ .Values.app.registry.adapter }}{{ if eq .Values.app.registry.adapter "strapi" }} -> {{ .Values.app.strapi.baseUrl }}{{ end }}
+  scorer.adapter   = {{ .Values.app.scorer.adapter }}{{ if eq .Values.app.scorer.adapter "spectral" }} -> {{ .Values.app.spectral.baseUrl }}{{ end }}{{ if eq .Values.app.scorer.adapter "jentic" }} -> {{ .Values.app.jentic.baseUrl }}{{ end }}
+
+Reach the API:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "api-onboarding.fullname" . }} 8080:{{ .Values.service.port }}
+
+  then:
+  curl http://localhost:8080/actuator/health
+  curl http://localhost:8080/registrations
+{{- end }}
+
+Verify the release:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}

@@ -11,6 +11,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>25</java.version>
+        <!-- Skips the redocly/zuplo spec bundling of test resources, which requires a Node
+             toolchain on PATH. Set to true for image/CI builds that do not run the tests. -->
+        <bundle.skip>false</bundle.skip>
     </properties>
 
     <dependencyManagement>
@@ -29,6 +32,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.5.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
             <version>3.5.14</version>
         </dependency>
         <dependency>
@@ -337,6 +345,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${bundle.skip}</skip>
                             <executable>${project.basedir}/scripts/bundle_registration_api.sh</executable>
                             <arguments>
                                 <argument>registration_v1.openapi.yaml</argument>
@@ -357,6 +366,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${bundle.skip}</skip>
                             <executable>${project.basedir}/scripts/bundle_scoring_api.sh</executable>
                             <arguments>
                                 <argument>scoring_v1.openapi.yaml</argument>
@@ -377,6 +387,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${bundle.skip}</skip>
                             <executable>${project.basedir}/scripts/bundle_specification_api.sh</executable>
                             <arguments>
                                 <argument>specification_v1.openapi.json</argument>
@@ -412,6 +423,24 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.5.14</version>
+                <configuration>
+                    <mainClass>io.obya.api.onboarding.Application</mainClass>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -1,0 +1,123 @@
+# Default values for api-onboarding.
+# Tuned for a local single-node cluster (Rancher Desktop / Docker Desktop).
+
+replicaCount: 1
+
+image:
+  repository: api-onboarding
+  # Defaults to .Chart.AppVersion when empty.
+  tag: ""
+  # IfNotPresent so a locally built image is used without a registry push.
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  # Defaults to the fullname template when empty.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  # Must match the "app" user baked into api-onboarding/Dockerfile.
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: api-onboarding.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    # No CPU limit on purpose: CFS throttling badly hurts JVM startup.
+    memory: 1Gi
+
+# Probes hit the Spring Boot Actuator health groups.
+# startupProbe covers JVM boot, so livenessProbe can stay aggressive.
+probes:
+  startup:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 30
+  liveness:
+    enabled: true
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    periodSeconds: 5
+    failureThreshold: 3
+
+# ---------------------------------------------------------------------------
+# Application configuration.
+# Rendered into a ConfigMap and mounted at /app/config/application.yaml, which
+# Spring Boot layers on top of the application.yaml baked into the jar.
+# ---------------------------------------------------------------------------
+app:
+  # Outbound registry port. "dummy" (in-memory) or "strapi".
+  registry:
+    adapter: dummy
+  # Outbound scoring port. "dummy", "spectral" or "jentic".
+  scorer:
+    adapter: dummy
+
+  # Only read when registry.adapter=strapi.
+  strapi:
+    baseUrl: http://api-registry:1337/api
+  # Only read when scorer.adapter=spectral.
+  spectral:
+    baseUrl: http://api-scorer:8081/api
+  # Only read when scorer.adapter=jentic.
+  jentic:
+    baseUrl: http://api-scorer:8081/api
+
+  # Arbitrary extra Spring properties, merged verbatim into the mounted
+  # application.yaml. Example:
+  #   extraConfig:
+  #     logging:
+  #       level:
+  #         io.obya: DEBUG
+  extraConfig: {}
+
+# JVM flags passed to the entrypoint.
+javaOpts: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
+
+# Additional raw environment variables, e.g.
+#   - name: SPRING_PROFILES_ACTIVE
+#     value: local
+extraEnv: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

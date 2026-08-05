@@ -1,6 +1,6 @@
 info:
   name: ${spring.application.name}
-  description: onboarding api backend
+  description: onboarding backend api
   version: 1.0.0
 
 registry:
@@ -19,19 +19,41 @@ jentic:
   base-url: http://localhost:8081/api
 
 spring:
+  application:
+    name: api-onboarding
   mvc:
     problemdetails:
       enabled: true
 
-management.endpoints.web.exposure.include: '*'
-management.endpoint.health.show-details: always
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: false
 
-management.health.circuitbreakers.enabled: true
-management.health.ratelimiters.enabled: false
-
-management.metrics.tags.application: ${spring.application.name}
-management.metrics.distribution.percentiles-histogram.http.server.requests: true
-management.metrics.distribution.percentiles-histogram.resilience4j.circuitbreaker.calls: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        'http.server.requests': true
+        'resilience4j.circuitbreaker.calls': true
 
 resilience4j.circuitbreaker:
   configs:

@@ -57,6 +57,26 @@ The taxonomy is deliberate — match new tests to the right layer:
 - **Unit** — JUnit 5 + AssertJ on domain/util.
 - **`playground/` subpackages** — exploratory/spike tests, not part of the acceptance guarantee.
 
+## Deployment — Helm (`helm/`)
+
+One standalone chart per component, mirroring the monorepo convention (no umbrella chart).
+`helm/api-onboarding/` exists; registry and scorer charts are still to come, so the chart
+defaults both outbound adapters to `dummy` and is deployable on its own. See `helm/README.md`.
+
+```bash
+cd api-onboarding && docker build -t api-onboarding:dev .   # nerdctl --namespace k8s.io build … on containerd
+helm upgrade --install api-onboarding helm/api-onboarding \
+  -n my-api-portal --create-namespace -f helm/api-onboarding/values-local.yaml
+```
+
+- **`-Dbundle.skip=true`** skips the `process-test-resources` spec bundling (the only Node/`npx`
+  dependency in the build); the image build uses it so no Node toolchain is needed in the builder
+  stage. Contract-first codegen at `generate-sources` still runs.
+- Chart config flows through a ConfigMap mounted at `/app/config/application.yaml`, which Spring
+  Boot layers **over** the jar's `application.yaml` — only put overrides in `values.yaml`, never
+  a duplicate of the whole file. Free-form additions go under `app.extraConfig`.
+- Probes use the Actuator health groups (`/actuator/health/{liveness,readiness}`).
+
 ## api-registry (Strapi) & api-portal (Astro)
 
 ```bash

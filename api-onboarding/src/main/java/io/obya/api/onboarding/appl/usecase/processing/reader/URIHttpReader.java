@@ -10,7 +10,7 @@ public class URIHttpReader implements URIReader {
 
     @Override
     public boolean canRead(URI uri) {
-        return uri.getScheme().equals("http");
+        return uri.getScheme().equals("http") || uri.getScheme().equals("https");
     }
 
     @Override
@@ -32,7 +32,7 @@ public class URIHttpReader implements URIReader {
 
     private void validateScheme(URI uri) {
         if (!canRead(uri)) {
-            throw new IllegalArgumentException("Not a valid URI, scheme must be http: " + uri);
+            throw new IllegalArgumentException("Not a valid URI, scheme must be http(s): " + uri);
         }
     }
 }
