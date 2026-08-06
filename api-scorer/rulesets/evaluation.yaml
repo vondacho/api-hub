@@ -1,0 +1,82 @@
+# How scoring-engine rules map onto scorecard dimensions, and how hard each one
+# bites. This is the tunable half of the evaluation: change it and the score
+# changes, with no code change and no rebuild. Mount it from a ConfigMap to tune
+# a deployment.
+#
+# What lives here and what does not:
+#   - which dimension a rule belongs to, and how much a breach costs (severity)
+#     are ENGINE concerns and live here;
+#   - the grading curve, the weighting between dimensions and the score->grade
+#     bands are POLICY and live in src/domain/scoring.ts.
+#
+# Rules the scorer itself declares carry their dimension inline (in the rule's
+# `extensions`), and that always wins. The globs below exist for the ~89 rules
+# inherited from spectral:oas and the OWASP ruleset, which Spectral's schema
+# forbids us from annotating directly.
+
+dimensions:
+  # Patterns are matched in the order the dimensions appear here, first match
+  # wins. `*` matches any run of characters; everything else is literal.
+  # Anything unmatched falls back to FC.
+
+  # Foundational Compliance — is the document structurally valid at all?
+  FC:
+    - "oas*-schema"
+    - "path-*"
+    - "operation-parameters"
+    - "operation-operationId-unique"
+    - "no-$ref-siblings"
+    - "typed-enum"
+    - "array-items"
+    - "duplicated-entry-in-enum"
+    - "oas*-unused-*"
+    - "oas2-anyOf"
+    - "oas2-oneOf"
+    - "oas2-discriminator"
+    - "oas3*-webhook"
+    - "oas3_callbacks_in_callbacks"
+
+  # Security — trust and risk posture. The owasp:* glob is what makes this
+  # dimension worth reporting; spectral:oas alone barely covers it.
+  SEC:
+    - "owasp:*"
+    - "oas*-operation-security-defined"
+    - "no-eval-in-markdown"
+    - "no-script-tags-in-markdown"
+
+  # Developer Experience — can a human (or a generator) make sense of it?
+  DX:
+    - "info-*"
+    - "contact-properties"
+    - "license-url"
+    - "operation-description"
+    - "operation-operationId*"
+    - "operation-tags"
+    - "operation-singular-tag"
+    - "operation-success-response"
+    - "*parameter-description"
+    - "tag-description"
+    - "openapi-tags*"
+    - "oas2-operation-formData-consume-check"
+
+  # Mock Readiness — is there enough here to stand a server up against it?
+  MR:
+    - "*valid-media-example"
+    - "*valid-schema-example"
+    - "oas3-examples-value-or-externalValue"
+    - "oas*-api-servers"
+    - "oas2-api-host"
+    - "oas2-api-schemes"
+    - "oas2-host-*"
+    - "oas3-server-*"
+
+# Optional per-rule severity overrides, applied over the ruleset defaults.
+# This is the weighting lever: severity is what the scoring policy prices, so
+# promoting a rule here makes it cost more (ERROR 10, WARNING 4, INFO 1,
+# HINT 0.5 per occurrence, saturating at 5 occurrences of the same rule).
+# Accepted values: error, warn, info, hint, off.
+severity:
+  # A specification nobody can identify the owner of is a real onboarding
+  # problem, not a style nit.
+  info-contact: error
+  info-description: error

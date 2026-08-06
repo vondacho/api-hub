@@ -12,11 +12,13 @@ strapi:
 scorer:
   adapter: dummy
 
+# The generated ScoringApi appends "/scorings" to this, so it must end at the
+# scoring contract's servers[0].url — /api/v1, not /api.
 spectral:
-  base-url: http://localhost:8081/api
+  base-url: http://localhost:8081/api/v1
 
 jentic:
-  base-url: http://localhost:8081/api
+  base-url: http://localhost:8081/api/v1
 
 spring:
   application:

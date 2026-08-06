@@ -1,0 +1,177 @@
+openapi: 3.1.0
+info:
+  title: API Scoring - Scoring
+  version: v1
+  description: Minimal API surface for scoring candidate API specifications to be onboarded.
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: API Onboarding Team
+    email: me@proton.me
+servers:
+  - url: /api/v1
+    description: API scoring server running in the DEV cluster
+paths:
+  /scorings:
+    post:
+      operationId: scoreCandidate
+      summary: Submit a Candidate
+      description: Accepts a Candidate payload describing a specification source to be processed.
+      tags:
+        - scoring
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Candidate'
+      responses:
+        "200":
+          description: Ok — candidate has been validated and scored successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandidateProcessed'
+        "400":
+          description: The request was malformed or could not be processed.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
+        "422":
+          description: Your client issued a request that failed validation.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '../problem/problem_rfc_v1.openapi.json#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    Candidate:
+      type: object
+      properties:
+        source:
+          type: string
+          format: uri
+          description: "URI pointing to the specContent"
+        contract:
+          $ref: '#/components/schemas/Contract'
+        body:
+          type: string
+          description: "The specContent"
+
+    Contract:
+      type: string
+      description: "Specification contract type"
+      enum:
+        - OPENAPI
+        - ASYNCAPI
+        - GRAPHQLS
+      example: OPENAPI
+
+    CandidateProcessed:
+      type: object
+      description: "Response for successfully scored candidate"
+      properties:
+        id:
+          type: string
+          description: "Unique identifier for the scoring"
+        source:
+          type: string
+          format: uri
+          description: "URI pointing to the specContent"
+        scorecard:
+          $ref: '#/components/schemas/Scorecard'
+      required:
+        - id
+        - source
+        - scorecard
+
+    Scorecard:
+      type: object
+      description: "Detailed scoring breakdown"
+      properties:
+        score:
+          $ref: '#/components/schemas/Score'
+        grade:
+          $ref: '#/components/schemas/Grade'
+        dimensions:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: "Name of the scoring dimension"
+                enum:
+                  - 'FC'
+                  - 'SEC'
+                  - 'DX'
+                  - 'MR'
+                  - 'ARAX'
+                  - 'AU'
+                  - 'AUD'
+              intent:
+                type: string
+                description: "Intent of the scoring dimension"
+              score:
+                $ref: '#/components/schemas/Score'
+              grade:
+                $ref: '#/components/schemas/Grade'
+            required:
+              - name
+              - intent
+              - score
+              - grade
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Violation'
+          description: "Detailed violations encountered during scoring"
+      required:
+        - score
+        - grade
+
+    Score:
+      type: number
+      format: int32
+      description: "Overall quality score (0-100)"
+
+    Grade:
+      type: string
+      description: "Overall quality grade based on score"
+      enum:
+        - 'A'
+        - 'A+'
+        - 'A-'
+        - 'B'
+        - 'B+'
+        - 'B-'
+        - 'C'
+        - 'C+'
+        - 'C-'
+        - 'D'
+        - 'D+'
+        - 'D-'
+
+    Violation:
+      type: object
+      description: "Violation encountered during processing"
+      properties:
+        code:
+          type: string
+          description: "Code of violation"
+        detail:
+          type: string
+          description: "Description of violation"
+        severity:
+          type: string
+          description: "Severity of violation"
+          enum:
+            - MAJOR
+            - MINOR
+      required:
+        - code
+        - detail
+        - severity

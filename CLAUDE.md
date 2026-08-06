@@ -16,6 +16,7 @@ The repo is a **monorepo of standalone modules** — there is no root aggregator
 | `api-registry/` | Strapi 5.49 (Node 20–24) | Headless CMS persisting registered specs, plus its admin web UI. Treated as an external system, reached only over its REST API. |
 | `api-registry-db/` | PostgreSQL 17 (Dockerfile only) | The database `api-registry` persists to. No application code — an image plus its `initdb/` bootstrap. |
 | `api-portal/` | Astro 6 (Node ≥22.12) | The **Catalogue** web frontend: list, search, view specs. |
+| `api-scorer/` | Fastify 5 / TypeScript (Node ≥22.12) | The **Scoring** microservice. Hexagonal, DI via `@fastify/awilix`. Grades specs with Spectral embedded as a library behind an outbound port. |
 
 **The registry runs on PostgreSQL, not MongoDB.** Strapi 5 reaches its database
 through Knex and ships connectors for `postgres`, `mysql` and `sqlite` only —
@@ -24,7 +25,12 @@ was dropped after Strapi v3, so a document store is not an option here. The
 stock in-file SQLite default is used only by `npm run develop`; in a cluster the
 registry talks to `api-registry-db`.
 
-The Scoring engine (Spectral/Jentic) described in `README.md` is **not a module in this repo** — `api-onboarding` integrates with it as an external REST service via its outbound adapters (`adapter/out/spectral`, `adapter/out/jentic`).
+**The Scoring engine lives in `api-scorer/`, as a library — not as a separate service.** `api-onboarding` reaches `api-scorer` over REST via `adapter/out/spectral`; `api-scorer` in turn runs Spectral in-process behind its own `ScorerDelegate` outbound port. Jentic is still unimplemented.
+
+Two things about `api-scorer` are easy to get wrong:
+
+- **Scoring is split between the ruleset and the domain, deliberately.** Which rules run, how serious each is, and which dimension it belongs to are *ruleset* concerns and live in `api-scorer/rulesets/evaluation.yaml`. What a broken rule is worth and the score→grade bands are *policy* and live in `src/domain/scoring.ts`. Retuning a deployment must stay a config change; if a task pushes rule-specific knowledge into the domain, that is the wrong layer.
+- **Only Spectral-backed dimensions are emitted** — FC, SEC, DX, MR. `ARAX`, `AU` and `AUD` are in the contract but nothing measures them, so they are never returned. This also keeps a latent naming mismatch dormant: the contract says `AUD` while onboarding's `Scorecard.Dimension` says `AID`, and `SpectralRestAdapter` would throw on `valueOf("AUD")`. Do not "fix" one side in isolation.
 
 ## Build & test — api-onboarding (the main work happens here)
 
@@ -68,17 +74,19 @@ The taxonomy is deliberate — match new tests to the right layer:
 ## Deployment — Helm (`helm/`)
 
 One standalone chart per component, mirroring the monorepo convention (no umbrella chart).
-`helm/api-onboarding/`, `helm/api-portal/`, `helm/api-registry/` and `helm/api-registry-db/`
-exist; the scorer chart is still to come. Onboarding still defaults **both** outbound adapters
-to `dummy`, so every chart is deployable on its own — `registry.adapter=strapi` now has a real
-service to point at, but flipping it also needs the `specification` permissions granted to
-Strapi's Public role (`adapter/out/strapi` sends no API token). See `helm/README.md`.
+`helm/api-onboarding/`, `helm/api-portal/`, `helm/api-registry/`, `helm/api-registry-db/`
+and `helm/api-scorer/` all exist. Onboarding's `values.yaml` still defaults **both** outbound
+adapters to `dummy` so every chart is deployable on its own, but its `values-local.yaml` now
+sets `scorer.adapter=spectral` and points at the deployed `api-scorer`. `registry.adapter=strapi`
+also has a real service to point at, but flipping it needs the `specification` permissions
+granted to Strapi's Public role (`adapter/out/strapi` sends no API token). See `helm/README.md`.
 
 ```bash
 cd api-onboarding  && docker build -t api-onboarding:dev .   # nerdctl --namespace k8s.io build … on containerd
 cd api-portal      && docker build -t api-portal:dev .
 cd api-registry    && docker build -t api-registry:dev .
 cd api-registry-db && docker build -t api-registry-db:dev .
+cd api-scorer      && docker build -t api-scorer:dev .
 
 # api-registry-db first: Strapi migrates its schema on boot and crash-loops until the
 # database answers.
@@ -90,6 +98,8 @@ helm upgrade --install api-onboarding helm/api-onboarding \
   -n my-api-portal --create-namespace -f helm/api-onboarding/values-local.yaml
 helm upgrade --install api-portal helm/api-portal \
   -n my-api-portal --create-namespace -f helm/api-portal/values-local.yaml
+helm upgrade --install api-scorer helm/api-scorer \
+  -n my-api-portal --create-namespace -f helm/api-scorer/values-local.yaml
 ```
 
 **api-onboarding**
@@ -110,6 +120,18 @@ helm upgrade --install api-portal helm/api-portal \
 - Chart config flows through a ConfigMap consumed with `envFrom`; every `app.*` key becomes an
   env var read server-side. Probes hit `/healthz` (`src/pages/healthz.ts`).
 - `values-local.yaml` enables a Traefik ingress at `http://api-portal.localhost`.
+
+**api-scorer**
+
+- Service port **8081** onto container port 3000, because `api-onboarding`'s chart
+  already points its scorer at `http://api-scorer:8081`. Pointing onboarding at it
+  also needs `app.spectral.baseUrl=http://api-scorer:8081/api/v1` — the chart's
+  default ends in `/api`, but the contract serves `/api/v1`.
+- `app.evaluation.content` replaces `rulesets/evaluation.yaml` through a mounted
+  ConfigMap, which is how scoring is retuned without a rebuild. It replaces the
+  file wholesale — a partial document collapses every rule into `FC`.
+- `values-local.yaml` sets `scorer.adapter=spectral`; the chart default is `dummy`
+  so it stays deployable standalone.
 
 **api-registry / api-registry-db**
 

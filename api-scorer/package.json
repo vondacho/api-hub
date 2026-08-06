@@ -1,0 +1,54 @@
+{
+  "name": "api-scorer",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Scoring microservice implementing api/scoring/scoring_v1.openapi.yaml",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "imports": {
+    "#domain/*": {
+      "development": "./src/domain/*",
+      "default": "./dist/domain/*"
+    },
+    "#appl/*": {
+      "development": "./src/appl/*",
+      "default": "./dist/appl/*"
+    },
+    "#adapter/*": {
+      "development": "./src/adapter/*",
+      "default": "./dist/adapter/*"
+    }
+  },
+  "scripts": {
+    "generate": "openapi-typescript api/scoring/scoring_v1.openapi.yaml -o src/adapter/in/web/model/scoring.d.ts",
+    "predev": "npm run generate",
+    "dev": "tsx watch --conditions=development src/main.ts",
+    "prebuild": "npm run generate",
+    "build": "tsc -p tsconfig.json",
+    "start": "node ./dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.7.2",
+    "@fastify/awilix": "^7.0.0",
+    "@stoplight/json-ref-resolver": "^3.1.6",
+    "@stoplight/spectral-core": "^1.23.1",
+    "@stoplight/spectral-functions": "^1.10.5",
+    "@stoplight/spectral-owasp-ruleset": "^2.0.1",
+    "@stoplight/spectral-parsers": "^1.0.5",
+    "@stoplight/spectral-rulesets": "^1.22.7",
+    "@stoplight/types": "^14.1.1",
+    "awilix": "^12.0.4",
+    "fastify": "^5.2.0",
+    "fastify-plugin": "^5.0.1",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "openapi-typescript": "^7.5.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

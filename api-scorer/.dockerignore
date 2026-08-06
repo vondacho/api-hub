@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.DS_Store
+*.iml
+.idea/
+.vscode/
+.env
+.env.production
+npm-debug.log*
+Dockerfile
+.dockerignore
+README.md
