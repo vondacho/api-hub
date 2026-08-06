@@ -1,0 +1,48 @@
+# Overrides for a locally built image on a single-node cluster
+# (Rancher Desktop / Docker Desktop).
+#
+#   helm upgrade --install api-registry helm/api-registry \
+#     -n my-api-portal --create-namespace \
+#     -f helm/api-registry/values-local.yaml
+#
+# Install helm/api-registry-db first — Strapi migrates its schema on boot and
+# will crash-loop until the database accepts connections.
+
+image:
+  repository: api-registry
+  tag: dev
+  # The image is built straight into the node's image store, never pulled.
+  pullPolicy: Never
+
+# Rancher Desktop runs Traefik as the default IngressClass, so the admin UI is
+# reachable at http://api-registry.localhost/admin without a port-forward.
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: api-registry.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+app:
+  # Must match the ingress host, or the admin panel's own asset and API calls
+  # go to the wrong origin.
+  url: http://api-registry.localhost
+
+# api-registry-db is deployed in the same namespace by its own chart.
+database:
+  host: api-registry-db
+  existingSecret: api-registry-db
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 1Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    memory: 1Gi

@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "api-registry.fullname" . }}-test-connection
+  labels:
+    {{- include "api-registry.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: health
+      image: curlimages/curl:8.11.1
+      args:
+        - --fail
+        - --silent
+        - --show-error
+        - http://{{ include "api-registry.fullname" . }}:{{ .Values.service.port }}{{ .Values.probes.path }}
+    - name: admin
+      image: curlimages/curl:8.11.1
+      args:
+        - --fail
+        - --silent
+        - --show-error
+        - --output
+        - /dev/null
+        # The health endpoint answers before the admin bundle is served, so the
+        # UI is checked separately — this is what a browser actually loads.
+        - http://{{ include "api-registry.fullname" . }}:{{ .Values.service.port }}/admin

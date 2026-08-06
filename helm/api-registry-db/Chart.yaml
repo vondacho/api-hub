@@ -1,0 +1,21 @@
+apiVersion: v2
+name: api-registry-db
+description: PostgreSQL instance backing the api-registry Strapi CMS
+type: application
+
+# Chart version. Bump on every change to the chart itself.
+version: 0.1.0
+
+# PostgreSQL major version shipped by api-registry-db/Dockerfile. Used as the
+# default image tag.
+appVersion: "17"
+
+keywords:
+  - postgresql
+  - strapi
+  - api-governance
+home: https://github.com/obya/my-api-portal
+sources:
+  - https://github.com/obya/my-api-portal/tree/main/api-registry-db
+maintainers:
+  - name: Olivier von Dach

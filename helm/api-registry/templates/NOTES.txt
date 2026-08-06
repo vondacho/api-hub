@@ -1,0 +1,29 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Persistence:
+  {{ .Values.database.client }} -> {{ .Values.database.host }}:{{ .Values.database.port }}/{{ .Values.database.name }}
+  password from secret "{{ .Values.database.existingSecret }}" key "{{ .Values.database.passwordKey }}"
+
+Open the admin UI:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}/admin
+  {{- end }}
+{{- end }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "api-registry.fullname" . }} 1337:{{ .Values.service.port }}
+
+  then open http://localhost:1337/admin
+{{- end }}
+
+The first visit asks you to create the initial administrator. That account is
+stored in the database, so it survives a redeploy of this chart but not a wipe
+of the api-registry-db volume.
+{{ if not (include "api-registry.publicUrl" .) }}
+NOTE: no public URL is configured. Strapi will advertise its in-cluster address,
+      which a browser cannot resolve. Fine behind a port-forward; set `app.url`
+      (or enable the ingress) for anything else.
+{{- end }}
+Verify the release:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}

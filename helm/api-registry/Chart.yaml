@@ -1,0 +1,21 @@
+apiVersion: v2
+name: api-registry
+description: Strapi CMS holding the registered API specifications, with its admin web UI
+type: application
+
+# Chart version. Bump on every change to the chart itself.
+version: 0.1.0
+
+# Version of api-registry shipped by default. Matches "version" in
+# api-registry/package.json and is used as the default image tag.
+appVersion: "0.1.0"
+
+keywords:
+  - strapi
+  - cms
+  - api-governance
+home: https://github.com/obya/my-api-portal
+sources:
+  - https://github.com/obya/my-api-portal/tree/main/api-registry
+maintainers:
+  - name: Olivier von Dach

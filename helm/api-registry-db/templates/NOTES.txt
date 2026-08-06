@@ -1,0 +1,24 @@
+{{ .Chart.Name }} (PostgreSQL {{ .Chart.AppVersion }}) deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Reachable in-cluster at:
+  {{ include "api-registry-db.fullname" . }}:{{ .Values.service.port }}
+  database={{ .Values.auth.database }} user={{ .Values.auth.username }}
+
+api-registry reads the password straight from this release's Secret, so its
+chart needs no copy of it:
+  database.existingSecret={{ include "api-registry-db.secretName" . }}
+
+Read the password:
+  kubectl --namespace {{ .Release.Namespace }} get secret {{ include "api-registry-db.secretName" . }} \
+    -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d; echo
+
+Open a psql shell:
+  kubectl --namespace {{ .Release.Namespace }} exec -it statefulset/{{ include "api-registry-db.fullname" . }} -- \
+    psql -U {{ .Values.auth.username }} -d {{ .Values.auth.database }}
+
+Verify the release:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+{{ if not .Values.persistence.enabled }}
+WARNING: persistence is disabled — the database lives in an emptyDir and every
+         registered spec is lost when the pod restarts.
+{{- end }}

@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "api-registry.fullname" . }}
+  labels:
+    {{- include "api-registry.labels" . | nindent 4 }}
+data:
+  # Injected wholesale with envFrom. Everything here is read by
+  # api-registry/config/*.ts through Strapi's env() helper — non-secret only;
+  # the credentials live in the Secret and are wired in as individual env vars.
+  HOST: "0.0.0.0"
+  PORT: {{ .Values.service.port | quote }}
+  NODE_ENV: "production"
+  {{- with include "api-registry.publicUrl" . }}
+  URL: {{ . | quote }}
+  {{- end }}
+  {{- if .Values.app.telemetryDisabled }}
+  STRAPI_TELEMETRY_DISABLED: "true"
+  STRAPI_DISABLE_UPDATE_NOTIFICATION: "true"
+  {{- end }}
+
+  # config/database.ts selects the connection block from DATABASE_CLIENT.
+  DATABASE_CLIENT: {{ .Values.database.client | quote }}
+  DATABASE_HOST: {{ .Values.database.host | quote }}
+  DATABASE_PORT: {{ .Values.database.port | quote }}
+  DATABASE_NAME: {{ .Values.database.name | quote }}
+  DATABASE_USERNAME: {{ .Values.database.username | quote }}
+  DATABASE_SSL: {{ .Values.database.ssl | quote }}
+  DATABASE_POOL_MIN: {{ .Values.database.pool.min | quote }}
+  DATABASE_POOL_MAX: {{ .Values.database.pool.max | quote }}
+  DATABASE_CONNECTION_TIMEOUT: {{ .Values.database.connectionTimeout | quote }}
+  {{- with .Values.app.extraConfig }}
+  {{- range $k, $v := . }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
+  {{- end }}

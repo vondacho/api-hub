@@ -13,8 +13,16 @@ The repo is a **monorepo of standalone modules** — there is no root aggregator
 | Path | Stack | Role |
 |------|-------|------|
 | `api-onboarding/` | Java 25 / Spring Boot 3.5 (Maven) | **Primary module.** REST microservice for parse/validate/score/overlay + registration. Hexagonal. |
-| `api-registry/` | Strapi 5.49 (Node 20–24) | Headless CMS persisting registered specs. Treated as an external system, reached only over its REST API. |
+| `api-registry/` | Strapi 5.49 (Node 20–24) | Headless CMS persisting registered specs, plus its admin web UI. Treated as an external system, reached only over its REST API. |
+| `api-registry-db/` | PostgreSQL 17 (Dockerfile only) | The database `api-registry` persists to. No application code — an image plus its `initdb/` bootstrap. |
 | `api-portal/` | Astro 6 (Node ≥22.12) | The **Catalogue** web frontend: list, search, view specs. |
+
+**The registry runs on PostgreSQL, not MongoDB.** Strapi 5 reaches its database
+through Knex and ships connectors for `postgres`, `mysql` and `sqlite` only —
+see the `connections` map in `api-registry/config/database.ts`. Mongoose support
+was dropped after Strapi v3, so a document store is not an option here. The
+stock in-file SQLite default is used only by `npm run develop`; in a cluster the
+registry talks to `api-registry-db`.
 
 The Scoring engine (Spectral/Jentic) described in `README.md` is **not a module in this repo** — `api-onboarding` integrates with it as an external REST service via its outbound adapters (`adapter/out/spectral`, `adapter/out/jentic`).
 
@@ -60,13 +68,24 @@ The taxonomy is deliberate — match new tests to the right layer:
 ## Deployment — Helm (`helm/`)
 
 One standalone chart per component, mirroring the monorepo convention (no umbrella chart).
-`helm/api-onboarding/` and `helm/api-portal/` exist; registry and scorer charts are still to
-come, so onboarding defaults both outbound adapters to `dummy` and each chart is deployable on
-its own. See `helm/README.md`.
+`helm/api-onboarding/`, `helm/api-portal/`, `helm/api-registry/` and `helm/api-registry-db/`
+exist; the scorer chart is still to come. Onboarding still defaults **both** outbound adapters
+to `dummy`, so every chart is deployable on its own — `registry.adapter=strapi` now has a real
+service to point at, but flipping it also needs the `specification` permissions granted to
+Strapi's Public role (`adapter/out/strapi` sends no API token). See `helm/README.md`.
 
 ```bash
-cd api-onboarding && docker build -t api-onboarding:dev .   # nerdctl --namespace k8s.io build … on containerd
-cd api-portal     && docker build -t api-portal:dev .
+cd api-onboarding  && docker build -t api-onboarding:dev .   # nerdctl --namespace k8s.io build … on containerd
+cd api-portal      && docker build -t api-portal:dev .
+cd api-registry    && docker build -t api-registry:dev .
+cd api-registry-db && docker build -t api-registry-db:dev .
+
+# api-registry-db first: Strapi migrates its schema on boot and crash-loops until the
+# database answers.
+helm upgrade --install api-registry-db helm/api-registry-db \
+  -n my-api-portal --create-namespace -f helm/api-registry-db/values-local.yaml
+helm upgrade --install api-registry helm/api-registry \
+  -n my-api-portal --create-namespace -f helm/api-registry/values-local.yaml
 helm upgrade --install api-onboarding helm/api-onboarding \
   -n my-api-portal --create-namespace -f helm/api-onboarding/values-local.yaml
 helm upgrade --install api-portal helm/api-portal \
@@ -92,6 +111,23 @@ helm upgrade --install api-portal helm/api-portal \
   env var read server-side. Probes hit `/healthz` (`src/pages/healthz.ts`).
 - `values-local.yaml` enables a Traefik ingress at `http://api-portal.localhost`.
 
+**api-registry / api-registry-db**
+
+- Install the database first; Strapi migrates its schema on boot and crash-loops until it can
+  connect.
+- The password lives in **one** place: the Secret the `api-registry-db` release owns. The
+  registry chart reads it with a `secretKeyRef` — never copy it into `values.yaml`.
+- Generated secrets (the database password, and Strapi's `APP_KEYS` / `ENCRYPTION_KEY` / …) are
+  read back from the live Secret on upgrade instead of being regenerated. Rotating
+  `ENCRYPTION_KEY` makes stored encrypted fields unreadable, so leave that read-back rule alone.
+- The registry image uses **selective copies**, not Strapi's documented `COPY /opt/app ./`, so
+  anything read at run time must be listed in the Dockerfile — including `tsconfig.json`, which
+  `strapi start` reads to locate `dist/`. Omitting it yields
+  `Cannot destructure property 'client' of 'db.config.connection'`.
+- `values-local.yaml` enables a Traefik ingress at `http://api-registry.localhost`; the admin UI
+  is at `/admin`. `app.url` must match that host or the panel calls back to an address the
+  browser cannot resolve. The database is deliberately not exposed.
+
 ## api-registry (Strapi) & api-portal (Astro)
 
 ```bash
@@ -100,6 +136,7 @@ cd api-portal   && npm run dev          # Astro dev (also: build, preview)
 ```
 
 - **Registry** is a black box behind `api-onboarding`'s `adapter/out/strapi`. Do not import it as a library or reach into its internals from onboarding code — go through the REST adapter and its outbound port.
+- `npm run develop` still uses the in-file SQLite default (`DATABASE_CLIENT` unset). Point `DATABASE_*` at a PostgreSQL instance to reproduce the deployed configuration locally; `config/database.ts` already carries the connector.
 - **Portal** types are generated from the contract-first OpenAPI spec (`openapi-typescript`). The spec is upstream and read-only from the frontend's view — don't hand-write types that duplicate the contract, and don't edit specs in frontend code.
 
 ## Working conventions

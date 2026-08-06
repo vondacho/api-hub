@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "api-registry-db.fullname" . }}-test-connection
+  labels:
+    {{- include "api-registry-db.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: psql
+      image: {{ include "api-registry-db.image" . }}
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "api-registry-db.secretName" . }}
+              key: POSTGRES_PASSWORD
+      # Asserts more than reachability: that authentication works and that the
+      # initdb hook in api-registry-db/initdb/ actually ran.
+      #
+      # The result is matched in the shell rather than asserted in SQL, because
+      # psql exits 0 on an empty result set and the obvious `DO $$ ... $$` form
+      # cannot survive the trip — Kubernetes rewrites "$$" to "$" when it
+      # expands container args.
+      command:
+        - sh
+        - -c
+        - >-
+          psql --host={{ include "api-registry-db.fullname" . }}
+          --port={{ .Values.service.port }}
+          --username={{ .Values.auth.username }}
+          --dbname={{ .Values.auth.database }}
+          --no-password --tuples-only --no-align --set=ON_ERROR_STOP=1
+          --command="SELECT extname FROM pg_extension WHERE extname = 'pg_trgm'"
+          | grep -qx pg_trgm
+          || { echo "pg_trgm missing - initdb hook did not run"; exit 1; }

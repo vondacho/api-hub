@@ -1,0 +1,108 @@
+# Default values for api-registry-db.
+# Tuned for a local single-node cluster (Rancher Desktop / Docker Desktop).
+
+image:
+  repository: api-registry-db
+  # Defaults to .Chart.AppVersion when empty.
+  tag: ""
+  # IfNotPresent so a locally built image is used without a registry push.
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  # Defaults to the fullname template when empty.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  # uid/gid of the "postgres" user in the postgres:17-alpine base image.
+  runAsUser: 70
+  runAsGroup: 70
+  fsGroup: 70
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  # PostgreSQL writes only to PGDATA, its socket directory and /tmp — all three
+  # are mounted as volumes below, so the image itself can stay read-only.
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 5432
+
+# ---------------------------------------------------------------------------
+# Database credentials.
+#
+# The password is generated on first install and preserved across upgrades by
+# reading it back from the live Secret — regenerating it would leave the
+# registry holding a stale credential. Set `auth.password` to pin it instead.
+#
+# api-registry does not carry a copy: its chart points a secretKeyRef at the
+# Secret this chart owns.
+# ---------------------------------------------------------------------------
+auth:
+  database: strapi
+  username: strapi
+  # Empty means "generate on first install, then keep".
+  password: ""
+  # Use a Secret managed outside this chart instead. Must expose the same keys
+  # this chart writes: POSTGRES_PASSWORD.
+  existingSecret: ""
+
+persistence:
+  enabled: true
+  # Empty uses the cluster's default StorageClass. Rancher Desktop ships
+  # "local-path" as the default.
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 4Gi
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    # No CPU limit: PostgreSQL is bursty during Strapi's schema migrations.
+    memory: 512Mi
+
+# Probes shell out to pg_isready, which reports the server's own view of
+# whether it is accepting connections — a TCP check passes while the cluster is
+# still recovering and would let Strapi connect too early.
+probes:
+  startup:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    # Generous: the very first boot runs initdb plus the scripts in
+    # api-registry-db/initdb/.
+    failureThreshold: 30
+  liveness:
+    enabled: true
+    periodSeconds: 15
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    periodSeconds: 10
+    failureThreshold: 3
+
+# Additional raw environment variables (full valueFrom syntax available), e.g.
+#   - name: POSTGRES_INITDB_ARGS
+#     value: "--data-checksums"
+extraEnv: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
