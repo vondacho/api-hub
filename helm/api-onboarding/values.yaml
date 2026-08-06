@@ -95,12 +95,15 @@ app:
   # Only read when registry.adapter=strapi.
   strapi:
     baseUrl: http://api-registry:1337/api
-  # Only read when scorer.adapter=spectral.
+  # Only read when scorer.adapter=spectral. The generated ScoringApi appends
+  # "/scorings", so this must end at the scoring contract's servers[0].url —
+  # /api/v1. api-scorer's chart maps Service port 8081 onto its container's 3000
+  # so this host:port holds.
   spectral:
-    baseUrl: http://api-scorer:8081/api
-  # Only read when scorer.adapter=jentic.
+    baseUrl: http://api-scorer:8081/api/v1
+  # Only read when scorer.adapter=jentic. No Jentic service exists yet.
   jentic:
-    baseUrl: http://api-scorer:8081/api
+    baseUrl: http://api-scorer:8081/api/v1
 
   # Arbitrary extra Spring properties, merged verbatim into the mounted
   # application.yaml. Example:

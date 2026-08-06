@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "api-scorer.fullname" . }}-test-connection
+  labels:
+    {{- include "api-scorer.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: health
+      image: curlimages/curl:8.11.1
+      args:
+        - --fail
+        - --silent
+        - --show-error
+        - http://{{ include "api-scorer.fullname" . }}:{{ .Values.service.port }}{{ .Values.probes.path }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "api-scorer.fullname" . }}-test-scoring
+  labels:
+    {{- include "api-scorer.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    # Exercises the actual contract rather than just liveness: an inline
+    # candidate must come back 200 with a scorecard. This catches a pod that
+    # boots but cannot score — a broken ruleset, say — which /healthz will not.
+    - name: score
+      image: curlimages/curl:8.11.1
+      args:
+        - --fail
+        - --silent
+        - --show-error
+        - --header
+        # Quoted: unquoted this is a YAML mapping, not an argument string.
+        - "content-type: application/json"
+        - --data
+        - '{"body":"openapi: 3.1.0\ninfo:\n  title: T\n  version: \"1.0\"\npaths: {}\n","contract":"OPENAPI"}'
+        - http://{{ include "api-scorer.fullname" . }}:{{ .Values.service.port }}{{ .Values.app.basePath }}/scorings

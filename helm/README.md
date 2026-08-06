@@ -10,7 +10,7 @@ independent chart** — there is no umbrella chart.
 | `api-portal/` | `api-portal` Astro Catalogue frontend | present |
 | `api-registry/` | `api-registry` Strapi CMS and its admin UI | present |
 | `api-registry-db/` | `api-registry-db` PostgreSQL instance | present |
-| `api-scorer/` | Spectral/Jentic scoring engine | planned |
+| `api-scorer/` | `api-scorer` Spectral scoring service | present |
 
 The registry is two charts rather than one, for the same reason the repo is a
 monorepo of standalone modules: the CMS is redeployed on every image change and
@@ -19,10 +19,10 @@ the Secret the `api-registry-db` release owns, so the credential exists in one
 place. **Install `api-registry-db` first** — Strapi migrates its schema on boot
 and crash-loops until the database answers.
 
-`api-onboarding` still defaults its scorer to the in-memory **dummy** adapter
-because no scorer chart exists yet, so it remains deployable on its own. Its
-`registry.adapter` can now be pointed at the deployed Strapi — see *Pointing at
-real dependencies*. `api-portal` points at `api-onboarding` over in-cluster DNS
+`api-onboarding`'s chart defaults both outbound adapters to the in-memory
+**dummy**, so it stays deployable on its own — but its `values-local.yaml` now
+wires the scorer to the deployed `api-scorer` for real. The registry still has
+to be switched on by hand; see *Pointing at real dependencies*. `api-portal` points at `api-onboarding` over in-cluster DNS
 but does not require it to be up in order to start.
 
 > **The registry runs on PostgreSQL, not MongoDB.** Strapi 5 reaches its
@@ -53,6 +53,7 @@ cd api-onboarding  && docker build -t api-onboarding:dev .
 cd api-portal      && docker build -t api-portal:dev .
 cd api-registry    && docker build -t api-registry:dev .
 cd api-registry-db && docker build -t api-registry-db:dev .
+cd api-scorer      && docker build -t api-scorer:dev .
 ```
 
 **Rancher Desktop with containerd** — build into the `k8s.io` namespace instead:
@@ -62,6 +63,7 @@ cd api-onboarding  && nerdctl --namespace k8s.io build -t api-onboarding:dev .
 cd api-portal      && nerdctl --namespace k8s.io build -t api-portal:dev .
 cd api-registry    && nerdctl --namespace k8s.io build -t api-registry:dev .
 cd api-registry-db && nerdctl --namespace k8s.io build -t api-registry-db:dev .
+cd api-scorer      && nerdctl --namespace k8s.io build -t api-scorer:dev .
 ```
 
 The `api-onboarding` build runs `mvn package -DskipTests -Dbundle.skip=true`.
@@ -106,6 +108,11 @@ helm upgrade --install api-onboarding helm/api-onboarding \
 helm upgrade --install api-portal helm/api-portal \
   --namespace my-api-portal --create-namespace \
   -f helm/api-portal/values-local.yaml
+
+# Independent of the others — nothing else has to be up first.
+helm upgrade --install api-scorer helm/api-scorer \
+  --namespace my-api-portal --create-namespace \
+  -f helm/api-scorer/values-local.yaml
 ```
 
 ## 3. Verify
@@ -115,6 +122,7 @@ helm test api-registry-db -n my-api-portal
 helm test api-registry    -n my-api-portal
 helm test api-onboarding  -n my-api-portal
 helm test api-portal      -n my-api-portal
+helm test api-scorer      -n my-api-portal
 ```
 
 `api-onboarding` has no ingress by default:
@@ -174,8 +182,55 @@ Strapi's content API is closed to anonymous callers by default, and
 until the `specification` permissions are granted to the **Public** role under
 *Settings → Users & Permissions → Roles* in the admin UI. `curl
 http://api-registry.localhost/api/specifications` returning `403` is that same
-default, not a broken deployment. The scorer adapter stays on `dummy` until that
-chart exists.
+default, not a broken deployment.
+
+### Pointing api-onboarding at api-scorer
+
+**Already done in `values-local.yaml`** — `app.scorer.adapter: spectral`. Deploy
+`api-scorer` first, then `api-onboarding`, and the two are connected:
+
+```bash
+helm upgrade --install api-scorer helm/api-scorer \
+  --namespace my-api-portal -f helm/api-scorer/values-local.yaml
+helm upgrade --install api-onboarding helm/api-onboarding \
+  --namespace my-api-portal -f helm/api-onboarding/values-local.yaml
+```
+
+`app.spectral.baseUrl` defaults to `http://api-scorer:8081/api/v1`. Both halves
+of that matter: the generated `ScoringApi` appends `/scorings`, so the path must
+end at the scoring contract's `servers[0].url` (`/api/v1`, not `/api`), and the
+port is 8081 because `api-scorer`'s Service maps 8081 onto its container's 3000
+for exactly this reason.
+
+Submitting a candidate proves the link end to end:
+
+```bash
+kubectl -n my-api-portal port-forward svc/api-onboarding 8080:8080
+
+curl -X POST http://localhost:8080/registrations \
+  -H 'content-type: application/json' \
+  -d '{"source":"https://raw.githubusercontent.com/vondacho/my-api-portal/main/api-onboarding/src/test/resources/api/examples/oas/valid_candidate.openapi.yaml"}'
+```
+
+A `201` carrying a `scorecard` with FC/SEC/DX/MR dimensions means the call
+reached the scorer. Note the path is `/registrations`, **not**
+`/api/v1/registrations` — the controller declares no prefix and no
+`server.servlet.context-path` is set, so the contract's `servers[0].url` is not
+reflected in the running routes.
+
+Three things about the candidate URL are not incidental, and a candidate that
+misses any of them fails **inside onboarding, before the scorer is ever
+called** — do not read those 422s as a broken link:
+
+- `Receptionist` sniffs the contract from the document's **first line**, so the
+  spec must open with `openapi: <version>`.
+- The version must be one `Contract.Version` knows: 3.0.3, 3.1.0 or 3.2.0.
+  OpenAPI **3.0.4 is rejected**, which rules out the current Swagger Petstore.
+- `info.version` must match `^v[0-9][1-9]*$` — `v1`, not `1.0.0`.
+
+The source also has to be publicly reachable, because onboarding forwards the
+**URI** (not the body) and `api-scorer` refuses to fetch anything resolving to a
+private address.
 
 ## How configuration reaches the apps
 
@@ -191,9 +246,22 @@ merged verbatim.
 **api-portal** — `values.yaml` `app.*` renders into a ConfigMap consumed with
 `envFrom`, so every key becomes an environment variable (`ONBOARDING_BASE_URL`,
 plus anything under `app.extraConfig`). Astro reads these server-side during SSR;
-they only reach the browser if a page renders them explicitly. All three of
-these charts annotate the pod template with a `checksum/config`, so a config
-change rolls the pods.
+they only reach the browser if a page renders them explicitly.
+
+**api-scorer** — same `envFrom` pattern as the portal; every `app.*` key becomes
+an environment variable read by `src/config.ts`. Its one extra is
+`app.evaluation.content`: set it and the chart renders a *second* ConfigMap
+holding `evaluation.yaml` — the rule-to-dimension mapping and severity overrides
+— mounts it at `/app/config/rulesets`, and points `SPECTRAL_EVALUATION` at it.
+That is how scoring is retuned without rebuilding the image. It **replaces** the
+file baked into the image rather than merging with it, so start from a copy of
+`api-scorer/rulesets/evaluation.yaml`; a document missing its `dimensions`
+section would silently collapse every rule into `FC`. It is mounted as a
+directory, not a `subPath`, because `subPath` mounts never see ConfigMap
+updates.
+
+All of these charts annotate the pod template with a `checksum/config`, so a
+config change rolls the pods.
 
 **api-registry** — `values.yaml` renders into a ConfigMap consumed with
 `envFrom`, read by `api-registry/config/*.ts` through Strapi's `env()` helper.
@@ -279,3 +347,9 @@ api-onboarding/                 api-portal/                  api-registry/      
     NOTES.txt                       NOTES.txt                    NOTES.txt                     NOTES.txt
     tests/test-connection.yaml      tests/test-connection.yaml   tests/test-connection.yaml    tests/test-connection.yaml
 ```
+
+`api-scorer/` follows the `api-portal/` column exactly, plus one file:
+`templates/evaluation-configmap.yaml`, rendered only when
+`app.evaluation.content` is set. Its `tests/test-connection.yaml` holds two
+pods — a `/healthz` probe and one that actually posts a candidate, because a
+scorer that boots with an unusable ruleset still passes a health check.

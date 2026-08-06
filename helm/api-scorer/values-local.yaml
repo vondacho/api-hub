@@ -1,0 +1,39 @@
+# Overrides for a locally built image on a single-node cluster
+# (Rancher Desktop / Docker Desktop).
+#
+#   cd api-scorer && docker build -t api-scorer:dev .
+#   helm upgrade --install api-scorer helm/api-scorer \
+#     -n my-api-portal --create-namespace \
+#     -f helm/api-scorer/values-local.yaml
+
+image:
+  repository: api-scorer
+  tag: dev
+  # The image is built straight into the node's image store, never pulled.
+  pullPolicy: Never
+
+# Locally we want the real thing: the dummy engine proves nothing about
+# Spectral loading, and composing the ruleset at boot is exactly the part
+# worth exercising in a cluster.
+app:
+  scorer:
+    adapter: spectral
+  logLevel: debug
+
+# Rancher Desktop runs Traefik as the default IngressClass. The scorer has no
+# business being public in a real cluster, but locally it saves a port-forward.
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: api-scorer.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 192Mi
+  limits:
+    memory: 512Mi

@@ -1,0 +1,37 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Fastify on container port 3000, exposed by the Service on {{ .Values.service.port }}.
+
+Scoring engine: {{ .Values.app.scorer.adapter }}
+{{- if eq .Values.app.scorer.adapter "dummy" }}
+  Fixed findings, no real linting. Set app.scorer.adapter=spectral to grade for real.
+{{- else }}
+  Spectral, in-process (spectral:oas + OWASP).
+  Rules: {{ if .Values.app.evaluation.content }}mounted from ConfigMap {{ include "api-scorer.fullname" . }}-evaluation{{ else }}rulesets/evaluation.yaml baked into the image{{ end }}
+{{- end }}
+
+Reachable in-cluster at:
+  http://{{ include "api-scorer.fullname" . }}:{{ .Values.service.port }}{{ .Values.app.basePath }}/scorings
+
+To have api-onboarding use it, that chart needs BOTH:
+  --set app.scorer.adapter=spectral \
+  --set app.spectral.baseUrl=http://{{ include "api-scorer.fullname" . }}:{{ .Values.service.port }}{{ .Values.app.basePath }}
+(its default baseUrl ends in /api, but this contract serves {{ .Values.app.basePath }}).
+
+Score something by hand:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  curl -X POST http://{{ $host.host }}{{ $.Values.app.basePath }}/scorings \
+    -H 'content-type: application/json' \
+    -d '{"source":"https://petstore3.swagger.io/api/v3/openapi.json"}'
+{{- end }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "api-scorer.fullname" . }} 8081:{{ .Values.service.port }}
+
+  curl -X POST http://localhost:8081{{ .Values.app.basePath }}/scorings \
+    -H 'content-type: application/json' \
+    -d '{"source":"https://petstore3.swagger.io/api/v3/openapi.json"}'
+{{- end }}
+
+Verify the release:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}

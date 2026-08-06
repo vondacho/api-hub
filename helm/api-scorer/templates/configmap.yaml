@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "api-scorer.fullname" . }}
+  labels:
+    {{- include "api-scorer.labels" . | nindent 4 }}
+data:
+  # Injected into the container with envFrom. Every key is read by
+  # api-scorer/src/config.ts; nothing here is secret.
+  SCORER_ADAPTER: {{ .Values.app.scorer.adapter | quote }}
+  LOG_LEVEL: {{ .Values.app.logLevel | quote }}
+  API_BASE_PATH: {{ .Values.app.basePath | quote }}
+  SPEC_MAX_BYTES: {{ .Values.app.limits.specMaxBytes | quote }}
+  SPEC_FETCH_TIMEOUT_MS: {{ .Values.app.limits.specFetchTimeoutMs | quote }}
+  SCORING_TIMEOUT_MS: {{ .Values.app.limits.scoringTimeoutMs | quote }}
+  MAX_VIOLATIONS: {{ .Values.app.limits.maxViolations | quote }}
+  {{- if .Values.app.evaluation.content }}
+  # Points at the mounted override rather than the file baked into the image.
+  SPECTRAL_EVALUATION: /app/config/rulesets/evaluation.yaml
+  {{- end }}
+  {{- range $key, $value := .Values.app.extraConfig }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

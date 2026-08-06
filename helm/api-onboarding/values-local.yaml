@@ -11,13 +11,18 @@ image:
   # The image is built straight into the node's image store, never pulled.
   pullPolicy: Never
 
-# Both outbound ports stay on the in-memory dummy adapters until the
-# registry and scorer charts land.
+# The scorer is deployed by helm/api-scorer, so point at it for real — that
+# path is the one worth exercising locally.
+#
+# The registry stays on the in-memory dummy: api-registry is deployed, but
+# adapter/out/strapi sends no API token, so switching it also means granting the
+# "specification" permissions to Strapi's Public role in the admin UI. See
+# helm/README.md.
 app:
   registry:
     adapter: dummy
   scorer:
-    adapter: dummy
+    adapter: spectral
   extraConfig:
     logging:
       level:

@@ -1,0 +1,15 @@
+{{- if .Values.app.evaluation.content -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "api-scorer.fullname" . }}-evaluation
+  labels:
+    {{- include "api-scorer.labels" . | nindent 4 }}
+data:
+  # Replaces api-scorer/rulesets/evaluation.yaml: which dimension each scoring
+  # rule belongs to, and any severity overrides. Kept in its own ConfigMap
+  # rather than merged into the env one so it can be mounted as a file, and so
+  # editing it rolls the pods on its own checksum.
+  evaluation.yaml: |
+    {{- .Values.app.evaluation.content | nindent 4 }}
+{{- end }}

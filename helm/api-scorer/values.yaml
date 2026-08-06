@@ -1,0 +1,148 @@
+# Default values for api-scorer.
+# Tuned for a local single-node cluster (Rancher Desktop / Docker Desktop).
+
+replicaCount: 1
+
+image:
+  repository: api-scorer
+  # Defaults to .Chart.AppVersion when empty.
+  tag: ""
+  # IfNotPresent so a locally built image is used without a registry push.
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  # Defaults to the fullname template when empty.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  # Must match the "app" user baked into api-scorer/Dockerfile.
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  # 8081 rather than the container's 3000, because api-onboarding's chart
+  # already points its scorer at http://api-scorer:8081. Keep them in step.
+  port: 8081
+
+# The scorer is an internal service: api-onboarding reaches it over in-cluster
+# DNS, and nothing outside the cluster has a reason to. Enable this only to
+# poke at it by hand.
+ingress:
+  enabled: false
+  # Empty uses the cluster's default IngressClass. Rancher Desktop ships
+  # "traefik" as the default.
+  className: ""
+  annotations: {}
+  hosts:
+    - host: api-scorer.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 50m
+    # Spectral holds the composed ruleset and the parsed document in memory,
+    # so this needs more headroom than the portal's Node server.
+    memory: 192Mi
+  limits:
+    # No CPU limit: linting is bursty and single-request latency matters.
+    memory: 512Mi
+
+# Probes hit the /healthz route served by src/adapter/in/web/HealthController.ts.
+# Node boots fast, but with scorer.adapter=spectral the ruleset is composed
+# before the server listens, so the startup budget allows for that.
+probes:
+  path: /healthz
+  startup:
+    enabled: true
+    initialDelaySeconds: 3
+    periodSeconds: 2
+    failureThreshold: 20
+  liveness:
+    enabled: true
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    periodSeconds: 5
+    failureThreshold: 3
+
+# ---------------------------------------------------------------------------
+# Application configuration.
+# Rendered into a ConfigMap and injected wholesale via envFrom — the same
+# pattern api-portal uses. Every key here becomes an environment variable read
+# by src/config.ts.
+# ---------------------------------------------------------------------------
+app:
+  # "dummy" or "spectral". Defaults to dummy so the chart is deployable on its
+  # own; an unrecognised value fails at startup rather than falling back.
+  scorer:
+    adapter: dummy
+
+  logLevel: info
+
+  # Must match the contract's servers[0].url in
+  # api-scorer/api/scoring/scoring_v1.openapi.yaml.
+  basePath: /api/v1
+
+  # Ceilings on one request. A source URI is fetched from the public internet
+  # and linted in-process, so both halves are bounded.
+  limits:
+    specMaxBytes: 5242880
+    specFetchTimeoutMs: 10000
+    scoringTimeoutMs: 30000
+    maxViolations: 100
+
+  # Replaces rulesets/evaluation.yaml — the rule-to-dimension mapping and
+  # severity overrides — without rebuilding the image.
+  #
+  # Leave `content` empty to use the file baked into the image. When set it is
+  # mounted read-only and SPECTRAL_EVALUATION is pointed at it.
+  #
+  # This REPLACES the file, it does not merge with it: a partial document whose
+  # `dimensions` section is missing would silently collapse every rule into FC.
+  # Copy api-scorer/rulesets/evaluation.yaml and edit the copy.
+  evaluation:
+    content: ""
+
+  # Arbitrary extra entries, merged verbatim into the same ConfigMap and so
+  # injected as env vars too:
+  #   extraConfig:
+  #     LOG_LEVEL: debug
+  extraConfig: {}
+
+# Flags passed to the Node process, e.g. "--max-old-space-size=384".
+nodeOptions: ""
+
+# Additional raw environment variables (full valueFrom syntax available), e.g.
+#   - name: SOME_SECRET
+#     valueFrom:
+#       secretKeyRef: { name: scorer, key: token }
+extraEnv: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

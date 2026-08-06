@@ -1,0 +1,22 @@
+apiVersion: v2
+name: api-scorer
+description: API Scoring service — grades API specifications with Spectral
+type: application
+
+# Chart version. Bump on every change to the chart itself.
+version: 0.1.0
+
+# Version of api-scorer shipped by default. Matches "version" in
+# api-scorer/package.json and is used as the default image tag.
+appVersion: "0.0.1"
+
+keywords:
+  - fastify
+  - spectral
+  - scoring
+  - api-governance
+home: https://github.com/obya/my-api-portal
+sources:
+  - https://github.com/obya/my-api-portal/tree/main/api-scorer
+maintainers:
+  - name: Olivier von Dach
