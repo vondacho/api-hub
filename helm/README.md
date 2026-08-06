@@ -207,26 +207,26 @@ Submitting a candidate proves the link end to end:
 ```bash
 kubectl -n my-api-portal port-forward svc/api-onboarding 8080:8080
 
-curl -X POST http://localhost:8080/registrations \
+curl -X POST http://localhost:8080/api/v1/registrations \
   -H 'content-type: application/json' \
   -d '{"source":"https://raw.githubusercontent.com/vondacho/my-api-portal/main/api-onboarding/src/test/resources/api/examples/oas/valid_candidate.openapi.yaml"}'
 ```
 
 A `201` carrying a `scorecard` with FC/SEC/DX/MR dimensions means the call
-reached the scorer. Note the path is `/registrations`, **not**
-`/api/v1/registrations` — the controller declares no prefix and no
-`server.servlet.context-path` is set, so the contract's `servers[0].url` is not
-reflected in the running routes.
+reached the scorer. The API is served under the contract's `servers[0].url`,
+carried by `RegistrationApi`'s `@RequestMapping` rather than by
+`server.servlet.context-path` — a context path would prefix `/actuator` too and
+break the chart's probes.
 
-Three things about the candidate URL are not incidental, and a candidate that
-misses any of them fails **inside onboarding, before the scorer is ever
-called** — do not read those 422s as a broken link:
+Two things about the candidate URL are not incidental, and a candidate that
+misses either fails **inside onboarding, before the scorer is ever called** —
+do not read those 422s as a broken link:
 
 - `Receptionist` sniffs the contract from the document's **first line**, so the
-  spec must open with `openapi: <version>`.
-- The version must be one `Contract.Version` knows: 3.0.3, 3.1.0 or 3.2.0.
-  OpenAPI **3.0.4 is rejected**, which rules out the current Swagger Petstore.
-- `info.version` must match `^v[0-9][1-9]*$` — `v1`, not `1.0.0`.
+  spec must open with `openapi: <version>`, and the version must be one
+  `Contract.Version` knows — any 3.0.x, 3.1.0 or 3.2.0.
+- `info.version` must match `^v[0-9][1-9]*$` — `v1`, not `1.0.0`. This is what
+  rules out most public specs, including the Swagger Petstore.
 
 The source also has to be publicly reachable, because onboarding forwards the
 **URI** (not the body) and `api-scorer` refuses to fetch anything resolving to a

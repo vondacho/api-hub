@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.*;
 )
 @Tag(name = "registrations", description = "Operations defined for api-onboarding")
 
-@RequestMapping("/registrations")
+@RequestMapping("/api/v1/registrations")
 public interface RegistrationApi {
 
     @Operation(

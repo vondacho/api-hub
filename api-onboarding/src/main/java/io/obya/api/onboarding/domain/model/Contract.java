@@ -67,7 +67,7 @@ public record Contract(Type type, Version version) {
     }
 
     public enum Version {
-        OPENAPI_V30(Pattern.compile(".*3\\.0\\.3.*")),
+        OPENAPI_V30(Pattern.compile(".*3\\.0\\.\\d+.*")),
         OPENAPI_V31(Pattern.compile(".*3\\.1\\.0.*")),
         OPENAPI_V32(Pattern.compile(".*3\\.2\\.0.*")),
         ASYNCAPI_V20(Pattern.compile(".*2\\.0\\.0.*")),

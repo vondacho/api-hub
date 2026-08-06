@@ -100,10 +100,10 @@ class RegistrationContractTest {
                 .runnerType(TestRunnerType.OPEN_API_SCHEMA.name())
                 .testEndpoint("http://host.testcontainers.internal:" + port)
                 .filteredOperations(List.of(
-                        "POST /registrations",
-                        "PUT /registrations/{id}/score",
-                        "PUT /registrations/{id}/component",
-                        "POST /registrations/{id}/overlay"
+                        "POST /api/v1/registrations",
+                        "PUT /api/v1/registrations/{id}/score",
+                        "PUT /api/v1/registrations/{id}/component",
+                        "POST /api/v1/registrations/{id}/overlay"
                 ))
                 .build();
 
@@ -112,10 +112,10 @@ class RegistrationContractTest {
         printLogs();
         print(testResult);
 
-        Assertions.assertSuccess(testResult, "POST /registrations");
-        Assertions.assertSuccess(testResult, "PUT /registrations/{id}/score");
-        Assertions.assertSuccess(testResult, "PUT /registrations/{id}/component");
-        Assertions.assertSuccess(testResult, "POST /registrations/{id}/overlay");
+        Assertions.assertSuccess(testResult, "POST /api/v1/registrations");
+        Assertions.assertSuccess(testResult, "PUT /api/v1/registrations/{id}/score");
+        Assertions.assertSuccess(testResult, "PUT /api/v1/registrations/{id}/component");
+        Assertions.assertSuccess(testResult, "POST /api/v1/registrations/{id}/overlay");
     }
 
     private void mockSubmission(Map<String, Supplier<Try<State>>> examples) {

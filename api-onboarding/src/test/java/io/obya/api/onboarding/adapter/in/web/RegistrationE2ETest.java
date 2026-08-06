@@ -86,7 +86,7 @@ class RegistrationE2ETest {
                 .serviceId("API Onboarding - Registration:v1")
                 .runnerType(TestRunnerType.OPEN_API_SCHEMA.name())
                 .testEndpoint("http://host.testcontainers.internal:" + port)
-                .filteredOperations(List.of("POST /registrations"))
+                .filteredOperations(List.of("POST /api/v1/registrations"))
                 .build();
 
         TestResult testResult = microcksContainer.testEndpoint(testRequest);
@@ -94,7 +94,7 @@ class RegistrationE2ETest {
         printLogs();
         print(testResult);
 
-        Assertions.assertSuccess(testResult, "POST /registrations");
+        Assertions.assertSuccess(testResult, "POST /api/v1/registrations");
     }
 
     private void printLogs() {
