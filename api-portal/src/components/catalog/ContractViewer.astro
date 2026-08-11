@@ -1,0 +1,73 @@
+---
+/*
+ * Renders a registered contract.
+ *
+ * OpenAPI goes to Scalar's reference UI. Everything else — AsyncAPI, GraphQL
+ * SDL, WSDL — is shown as its source, because there is no reference renderer for
+ * them here and a blank panel would be worse than the document itself.
+ *
+ * The source is handed over inside a <script type="application/json"> rather
+ * than interpolated into JavaScript: the body is arbitrary user-submitted text,
+ * and this is the one place it crosses into the client. Astro escapes `<` in
+ * JSON script blocks, so the document cannot break out of the tag.
+ */
+import { isOpenApi, type Specification } from '../../lib/registry';
+
+interface Props {
+	specification: Specification;
+}
+
+const { specification: spec } = Astro.props;
+
+/* `body` is `unknown` in the contract; the registry stores the source as text. */
+const source = typeof spec.body === 'string' ? spec.body : JSON.stringify(spec.body, null, 2);
+const renderable = isOpenApi(spec.contract);
+---
+
+{
+	renderable ? (
+		<>
+			<script id="contract-source" type="application/json" set:html={JSON.stringify(source)} />
+			<div id="contract-reference" class="scalar-host" />
+			<noscript>
+				<p class="mb-3 text-sm text-ink-muted dark:text-slate-400">
+					The reference view needs JavaScript. The contract source follows.
+				</p>
+				<pre class="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs dark:border-slate-700 dark:bg-night-raised"><code>{source}</code></pre>
+			</noscript>
+		</>
+	) : (
+		<>
+			<p class="mb-3 text-sm text-ink-muted dark:text-slate-400">
+				No reference renderer for this contract type — showing the source.
+			</p>
+			<pre class="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs dark:border-slate-700 dark:bg-night-raised"><code>{source}</code></pre>
+		</>
+	)
+}
+
+<script>
+	import { createApiReference } from '@scalar/api-reference';
+
+	const holder = document.getElementById('contract-source');
+	const mount = document.getElementById('contract-reference');
+
+	if (holder?.textContent && mount) {
+		// Scalar accepts the document as a string and detects YAML or JSON itself,
+		// so the stored source is passed through untouched — no reserialising, and
+		// no guessing at the original format.
+		createApiReference(mount, {
+			content: JSON.parse(holder.textContent) as string,
+			// The portal follows the OS theme and Scalar does not, so it is told.
+			darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+			hideClientButton: true,
+		});
+	}
+</script>
+
+<style is:global>
+	/* Scalar ships its own scrolling shell; keep it inside the page instead. */
+	.scalar-host .scalar-app {
+		min-height: 60vh;
+	}
+</style>

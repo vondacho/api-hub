@@ -10,13 +10,18 @@
     "build": "astro build",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "generate:registry-types": "openapi-typescript ../api-onboarding/src/main/resources/api/strapi/specification_v1.openapi.json -o src/types/registry.d.ts"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.0",
     "@astrojs/starlight": "^0.41.7",
+    "@scalar/api-reference": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.2.0",
     "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0"
   }
 }

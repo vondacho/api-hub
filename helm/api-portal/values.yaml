@@ -94,6 +94,12 @@ app:
   onboarding:
     baseUrl: http://api-onboarding:8080
 
+  # Base URL of the registry's REST API. The Catalogue reads it directly —
+  # api-onboarding exposes no query API — and only server-side, so the registry
+  # itself stays unexposed. Must end at the API root, without a trailing slash.
+  registry:
+    baseUrl: http://api-registry:1337/api
+
   # Arbitrary extra entries, merged verbatim into the same ConfigMap and so
   # injected as env vars too:
   #   extraConfig:

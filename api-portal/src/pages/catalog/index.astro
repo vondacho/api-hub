@@ -1,0 +1,112 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SiteFooter from '../../components/home/SiteFooter.astro';
+import SpecificationCard from '../../components/catalog/SpecificationCard.astro';
+import { searchSpecifications, type Specification } from '../../lib/registry';
+
+/*
+ * The search term lives in the URL, not in component state: a search is then
+ * shareable, survives a reload, and the page needs no client-side JavaScript to
+ * work — the form is a plain GET.
+ */
+const query = Astro.url.searchParams.get('q')?.trim() ?? '';
+
+let specifications: Specification[] = [];
+let failure: string | undefined;
+
+try {
+	specifications = await searchSpecifications(query);
+} catch (error) {
+	// The registry being unreachable or refusing the read is an operational
+	// fault, not an empty catalogue. Say which it is instead of showing "no
+	// results" and letting someone hunt for a spec that is actually there.
+	failure = error instanceof Error ? error.message : String(error);
+}
+---
+
+<Layout
+	title="Catalog — API Hub"
+	description="Search every registered API contract by name and read its specification."
+>
+	<main id="main" class="mx-auto w-full max-w-5xl px-6 py-12">
+		<nav class="text-sm text-ink-muted dark:text-slate-400">
+			<a href="/" class="hover:text-brand hover:underline dark:hover:text-sky-400">Home</a>
+			<span aria-hidden="true"> / </span>
+			<span>Catalog</span>
+		</nav>
+
+		<h1 class="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Catalog</h1>
+		<p class="mt-2 max-w-2xl text-ink-muted dark:text-slate-400">
+			Every registered API, with its contract and the metadata declared in it.
+			Search by all or part of a name.
+		</p>
+
+		<form method="get" role="search" class="mt-8 flex flex-wrap gap-3">
+			<label for="q" class="sr-only">Search APIs by name</label>
+			<input
+				id="q"
+				name="q"
+				type="search"
+				value={query}
+				placeholder="e.g. pet"
+				autocomplete="off"
+				class="min-w-0 grow rounded-full border border-slate-300 bg-white px-5 py-3 text-base placeholder:text-slate-400 focus-visible:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-slate-600 dark:bg-night-raised dark:placeholder:text-slate-500"
+			/>
+			<button
+				type="submit"
+				class="rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-strong"
+			>
+				Search
+			</button>
+			{
+				query && (
+					<a
+						href="/catalog"
+						class="rounded-full border border-slate-300 px-6 py-3 font-semibold transition hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-night-raised"
+					>
+						Clear
+					</a>
+				)
+			}
+		</form>
+
+		{
+			failure ? (
+				<p
+					role="alert"
+					class="mt-10 rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm dark:border-amber-700/60 dark:bg-amber-950/40"
+				>
+					<strong>The catalogue could not be read.</strong>
+					<span class="mt-1 block font-mono text-xs break-words">{failure}</span>
+					<span class="mt-2 block text-ink-muted dark:text-slate-400">
+						A 403 here means the registry's Public role is missing its
+						<code>specification</code> permissions.
+					</span>
+				</p>
+			) : (
+				<>
+					<p class="mt-8 text-sm text-ink-muted dark:text-slate-400" aria-live="polite">
+						{specifications.length}
+						{specifications.length === 1 ? ' API' : ' APIs'}
+						{query && <> matching “{query}”</>}
+					</p>
+
+					{specifications.length > 0 ? (
+						<ul class="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+							{specifications.map((specification) => (
+								<SpecificationCard specification={specification} />
+							))}
+						</ul>
+					) : (
+						<p class="mt-4 rounded-xl border border-slate-200 p-8 text-center text-ink-muted dark:border-slate-700 dark:text-slate-400">
+							{query
+								? 'No API name contains that text.'
+								: 'Nothing has been registered yet. Onboard a contract to see it here.'}
+						</p>
+					)}
+				</>
+			)
+		}
+	</main>
+	<SiteFooter />
+</Layout>

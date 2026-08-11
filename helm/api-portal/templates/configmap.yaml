@@ -9,6 +9,7 @@ data:
   # SSR (process.env / import.meta.env) and never shipped to the browser unless
   # a page renders them, so in-cluster URLs are safe here.
   ONBOARDING_BASE_URL: {{ .Values.app.onboarding.baseUrl | quote }}
+  REGISTRY_BASE_URL: {{ .Values.app.registry.baseUrl | quote }}
   {{- range $key, $value := .Values.app.extraConfig }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
