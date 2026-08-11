@@ -1,0 +1,19 @@
+---
+title: Catalog
+description: Finding a registered API and reading its contract.
+---
+
+The Catalog is the discovery surface: every contract that has been onboarded and
+registered is listed here, searchable, with its scorecard and its resolved
+contract attached.
+
+## What a catalog entry carries
+
+- the **contract** itself, bundled and resolved — no unresolved `$ref`s to chase;
+- the **scorecard**, per [dimension](/doc/design-guidelines/), from the last scoring run;
+- **revision history** — a contract is versioned, and superseded revisions stay readable.
+
+:::note[To be completed]
+Search and filter behaviour should be documented here once the Catalogue UI
+settles — in particular what is indexed, and how revisions are addressed in a URL.
+:::

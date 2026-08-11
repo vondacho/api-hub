@@ -1,0 +1,59 @@
+---
+import heroBackground from '../../assets/hero-background.svg';
+---
+
+<section class="relative isolate flex min-h-[min(70vh,620px)] items-center overflow-hidden px-6 py-20 text-slate-100 sm:py-28">
+	<!--
+		The backdrop is decorative: it carries nothing the copy does not, so it is
+		empty-alt and aria-hidden. The copy sits on a gradient scrim rather than on
+		the artwork itself, so contrast never depends on where the image is dark.
+	-->
+	<!--
+		Deliberately a plain <img>, not <Image>: the backdrop is vector, so there is
+		nothing to resize or re-encode, and routing it through astro:assets would
+		put a request on the SSR image endpoint on every page view for no gain.
+		The import still gets the asset hashed and fingerprinted.
+	-->
+	<img
+		class="absolute inset-0 -z-20 h-full w-full object-cover"
+		src={heroBackground.src}
+		width={heroBackground.width}
+		height={heroBackground.height}
+		alt=""
+		aria-hidden="true"
+		loading="eager"
+		decoding="async"
+	/>
+	<div
+		class="absolute inset-0 -z-10 bg-linear-100 from-slate-950/95 via-slate-950/75 to-slate-950/35"
+	>
+	</div>
+
+	<div class="mx-auto w-full max-w-5xl">
+		<p class="text-xs font-semibold tracking-[0.16em] text-sky-300 uppercase">
+			API contract lifecycle platform
+		</p>
+		<h1 class="mt-3 max-w-3xl text-4xl font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+			Every API, under contract.
+		</h1>
+		<p class="mt-5 max-w-2xl text-base text-slate-300 sm:text-lg">
+			API Hub parses, validates, scores and registers your API contracts — OpenAPI,
+			AsyncAPI, GraphQL and WSDL — so a specification stops being a document
+			someone wrote once and becomes the thing the platform actually enforces.
+		</p>
+		<div class="mt-8 flex flex-wrap gap-3">
+			<a
+				href="/doc/"
+				class="rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-strong focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sky-300"
+			>
+				Read the documentation
+			</a>
+			<a
+				href="/doc/onboarding/"
+				class="rounded-full border border-white/35 px-6 py-3 font-semibold text-slate-100 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sky-300"
+			>
+				Onboard a contract
+			</a>
+		</div>
+	</div>
+</section>

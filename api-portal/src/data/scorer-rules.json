@@ -1,0 +1,1251 @@
+{
+  "source": {
+    "evaluation": "api-scorer/rulesets/evaluation.yaml",
+    "rulesets": {
+      "@stoplight/spectral-rulesets": "1.22.7",
+      "@stoplight/spectral-owasp-ruleset": "2.0.1"
+    }
+  },
+  "policy": {
+    "penalties": {
+      "ERROR": 10,
+      "WARNING": 4,
+      "INFO": 1,
+      "HINT": 0.5
+    },
+    "weights": {
+      "FC": 0.4,
+      "SEC": 0.3,
+      "DX": 0.2,
+      "MR": 0.1
+    },
+    "grades": [
+      {
+        "grade": "A+",
+        "min": 98
+      },
+      {
+        "grade": "A",
+        "min": 94
+      },
+      {
+        "grade": "A-",
+        "min": 90
+      },
+      {
+        "grade": "B+",
+        "min": 85
+      },
+      {
+        "grade": "B",
+        "min": 80
+      },
+      {
+        "grade": "B-",
+        "min": 75
+      },
+      {
+        "grade": "C+",
+        "min": 67
+      },
+      {
+        "grade": "C",
+        "min": 59
+      },
+      {
+        "grade": "C-",
+        "min": 50
+      },
+      {
+        "grade": "D+",
+        "min": 34
+      },
+      {
+        "grade": "D",
+        "min": 17
+      },
+      {
+        "grade": "D-",
+        "min": 0
+      }
+    ]
+  },
+  "dimensions": {
+    "FC": {
+      "intent": "Base layer of spec validity and structural soundness."
+    },
+    "SEC": {
+      "intent": "Trust, risk posture, and security compliance."
+    },
+    "DX": {
+      "intent": "Clarity, completeness, and ingestion readiness for developers and tooling."
+    },
+    "MR": {
+      "intent": "Assesses the API's readiness for mock testing and development."
+    },
+    "ARAX": {
+      "intent": "Semantic breadth, depth, and agent comprehension for AI systems."
+    },
+    "AU": {
+      "intent": "Functional utility, complexity comfort, and AI orchestration readiness."
+    },
+    "AUD": {
+      "intent": "Findability, semantic richness, and reasoning readiness."
+    }
+  },
+  "contracts": {
+    "OPENAPI": {
+      "coverage": [
+        {
+          "dimension": "FC",
+          "enabled": {
+            "ERROR": 7,
+            "WARNING": 14
+          }
+        },
+        {
+          "dimension": "SEC",
+          "enabled": {
+            "WARNING": 14,
+            "ERROR": 21,
+            "INFO": 1
+          }
+        },
+        {
+          "dimension": "DX",
+          "enabled": {
+            "WARNING": 6,
+            "ERROR": 3
+          }
+        },
+        {
+          "dimension": "MR",
+          "enabled": {
+            "WARNING": 6,
+            "ERROR": 5
+          }
+        }
+      ],
+      "rules": [
+        {
+          "name": "array-items",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#array-items"
+        },
+        {
+          "name": "contact-properties",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Contact object must have \"name\", \"url\" and \"email\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#contact-properties"
+        },
+        {
+          "name": "duplicated-entry-in-enum",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Enum values must not have duplicate entry.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#duplicated-entry-in-enum"
+        },
+        {
+          "name": "info-contact",
+          "dimension": "DX",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Info object must have \"contact\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#info-contact"
+        },
+        {
+          "name": "info-description",
+          "dimension": "DX",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Info \"description\" must be present and non-empty string.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#info-description"
+        },
+        {
+          "name": "info-license",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Info object must have \"license\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#info-license"
+        },
+        {
+          "name": "license-url",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "License object must include \"url\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#license-url"
+        },
+        {
+          "name": "no-$ref-siblings",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Property must not be placed among $ref",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#no-$ref-siblings"
+        },
+        {
+          "name": "no-eval-in-markdown",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Markdown descriptions must not have \"eval(\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#no-eval-in-markdown"
+        },
+        {
+          "name": "no-script-tags-in-markdown",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Markdown descriptions must not have \"<script>\" tags.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#no-script-tags-in-markdown"
+        },
+        {
+          "name": "oas2-anyOf",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "anyOf is not available in OpenAPI v2, it was added in OpenAPI v3",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-anyOf"
+        },
+        {
+          "name": "oas2-api-host",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "OpenAPI \"host\" must be present and non-empty string.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-api-host"
+        },
+        {
+          "name": "oas2-api-schemes",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "OpenAPI host \"schemes\" must be present and non-empty array.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-api-schemes"
+        },
+        {
+          "name": "oas2-discriminator",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "discriminator property must be defined and required",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-discriminator"
+        },
+        {
+          "name": "oas2-host-not-example",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Host URL must not point at example.com.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-host-not-example"
+        },
+        {
+          "name": "oas2-host-trailing-slash",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Server URL must not have trailing slash.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-host-trailing-slash"
+        },
+        {
+          "name": "oas2-oneOf",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "oneOf is not available in OpenAPI v2, it was added in OpenAPI v3",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-oneOf"
+        },
+        {
+          "name": "oas2-operation-formData-consume-check",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operations with \"in: formData\" parameter must include \"application/x-www-form-urlencoded\" or \"multipart/form-data\" in their \"consumes\" property.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-operation-formData-consume-check"
+        },
+        {
+          "name": "oas2-operation-security-defined",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation \"security\" values must match a scheme defined in the \"securityDefinitions\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-operation-security-defined"
+        },
+        {
+          "name": "oas2-parameter-description",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Parameter objects must have \"description\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-parameter-description"
+        },
+        {
+          "name": "oas2-schema",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Validate structure of OpenAPI v2 specification.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-schema"
+        },
+        {
+          "name": "oas2-unused-definition",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Potentially unused definition has been detected.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-unused-definition"
+        },
+        {
+          "name": "oas2-valid-media-example",
+          "dimension": "MR",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Examples must be valid against their defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-valid-media-example"
+        },
+        {
+          "name": "oas2-valid-schema-example",
+          "dimension": "MR",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Examples must be valid against their defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas2-valid-schema-example"
+        },
+        {
+          "name": "oas3_1-callbacks-in-webhook",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3_1-callbacks-in-webhook"
+        },
+        {
+          "name": "oas3_1-servers-in-webhook",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3_1-servers-in-webhook"
+        },
+        {
+          "name": "oas3-api-servers",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "OpenAPI \"servers\" must be present and non-empty array.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-api-servers"
+        },
+        {
+          "name": "oas3-callbacks-in-callbacks",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-callbacks-in-callbacks"
+        },
+        {
+          "name": "oas3-examples-value-or-externalValue",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Examples must have either \"value\" or \"externalValue\" field.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-examples-value-or-externalValue"
+        },
+        {
+          "name": "oas3-operation-security-defined",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation \"security\" values must match a scheme defined in the \"components.securitySchemes\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-operation-security-defined"
+        },
+        {
+          "name": "oas3-parameter-description",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Parameter objects must have \"description\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-parameter-description"
+        },
+        {
+          "name": "oas3-schema",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Validate structure of OpenAPI v3 specification.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-schema"
+        },
+        {
+          "name": "oas3-server-not-example.com",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Server URL must not point at example.com.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-server-not-example.com"
+        },
+        {
+          "name": "oas3-server-trailing-slash",
+          "dimension": "MR",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Server URL must not have trailing slash.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-server-trailing-slash"
+        },
+        {
+          "name": "oas3-server-variables",
+          "dimension": "MR",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Server variables must be defined and valid and there must be no unused variables.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-server-variables"
+        },
+        {
+          "name": "oas3-unused-component",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-unused-component"
+        },
+        {
+          "name": "oas3-valid-media-example",
+          "dimension": "MR",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Examples must be valid against their defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-valid-media-example"
+        },
+        {
+          "name": "oas3-valid-schema-example",
+          "dimension": "MR",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Examples must be valid against their defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#oas3-valid-schema-example"
+        },
+        {
+          "name": "openapi-tags",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "OpenAPI object must have non-empty \"tags\" array.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#openapi-tags"
+        },
+        {
+          "name": "openapi-tags-alphabetical",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "OpenAPI object must have alphabetical \"tags\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#openapi-tags-alphabetical"
+        },
+        {
+          "name": "openapi-tags-uniqueness",
+          "dimension": "DX",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Each tag must have a unique name.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#openapi-tags-uniqueness"
+        },
+        {
+          "name": "operation-description",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation \"description\" must be present and non-empty string.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-description"
+        },
+        {
+          "name": "operation-operationId",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation must have \"operationId\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-operationId"
+        },
+        {
+          "name": "operation-operationId-unique",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Every operation must have unique \"operationId\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-operationId-unique"
+        },
+        {
+          "name": "operation-operationId-valid-in-url",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-operationId-valid-in-url"
+        },
+        {
+          "name": "operation-parameters",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation parameters are unique and non-repeating.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-parameters"
+        },
+        {
+          "name": "operation-singular-tag",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Operation must not have more than a single tag.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-singular-tag"
+        },
+        {
+          "name": "operation-success-response",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation must have at least one \"2xx\" or \"3xx\" response.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-success-response"
+        },
+        {
+          "name": "operation-tag-defined",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation tags must be defined in global tags.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-tag-defined"
+        },
+        {
+          "name": "operation-tags",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation must have non-empty \"tags\" array.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#operation-tags"
+        },
+        {
+          "name": "owasp:api1:2023-no-numeric-ids",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Use random IDs that cannot be guessed. UUIDs are preferred but any other random string will do."
+        },
+        {
+          "name": "owasp:api2:2023-auth-insecure-schemes",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "There are many [HTTP authorization schemes](https://www.iana.org/assignments/http-authschemes/) but some of them are now considered insecure, such as negotiating authentication using specifications like NTLM or OAuth v1."
+        },
+        {
+          "name": "owasp:api2:2023-jwt-best-practices",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "JSON Web Tokens RFC7519 is a compact, URL-safe, means of representing claims to be transferred between two parties. JWT can be enclosed in encrypted or signed tokens like JWS and JWE.\n\nThe [JOSE IANA registry](https://www.iana.org/assignments/jose/jose.xhtml) provides algorithms information.\n\nRFC8725 describes common pitfalls in the JWx specifications and in\ntheir implementations, such as:\n- the ability to ignore algorithms, eg. `{\"alg\": \"none\"}`;\n- using insecure algorithms like `RSASSA-PKCS1-v1_5` eg. `{\"alg\": \"RS256\"}`.\nAn API using JWT should explicit in the `description`\nthat the implementation conforms to RFC8725.\n```\ncomponents:\n  securitySchemes:\n    JWTBearer:\n      type: http\n      scheme: bearer\n      bearerFormat: JWT\n      description: |-\n        A bearer token in the format of a JWS and conformato\n        to the specifications included in RFC8725.\n```"
+        },
+        {
+          "name": "owasp:api2:2023-no-api-keys-in-url",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "API Keys are are passed in headers, cookies or query parameters to access APIs Those keys can be eavesdropped, especially when they are passed in the URL as logging or history tools will keep track of them and potentially expose them."
+        },
+        {
+          "name": "owasp:api2:2023-no-credentials-in-url",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "URL parameters MUST NOT contain credentials such as API key, password, or secret. See [RAC_GEN_004](https://docs.italia.it/italia/piano-triennale-ict/lg-modellointeroperabilita-docs/it/bozza/doc/04_Raccomandazioni%20di%20implementazione/04_raccomandazioni-tecniche-generali/01_globali.html?highlight=credenziali#rac-gen-004-non-passare-credenziali-o-dati-riservati-nellurl)"
+        },
+        {
+          "name": "owasp:api2:2023-no-http-basic",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Basic authentication credentials transported over network are more susceptible to interception than other forms of authentication, and as they are not encrypted it means passwords and tokens are more easily leaked."
+        },
+        {
+          "name": "owasp:api2:2023-read-restricted",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Read operations (GET, HEAD) should be secured by at least one security scheme. Security schemes are defined in the `securityScheme` section then referenced in the `security` key at the global or operation levels."
+        },
+        {
+          "name": "owasp:api2:2023-short-lived-access-tokens",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Using short-lived access tokens is a good practice, and when using OAuth 2 this is done by using refresh tokens. If a malicious actor is able to get hold of an access token then rotation means that token might not work by the time they try to use it, or it could at least reduce how long they are able to perform malicious requests."
+        },
+        {
+          "name": "owasp:api2:2023-write-restricted",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "All write operations (POST, PUT, PATCH, DELETE) must be secured by at least one security scheme. Security schemes are defined in the `securityScheme` section then referenced in the `security` key at the global or operation levels."
+        },
+        {
+          "name": "owasp:api3:2023-constrained-additionalProperties",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "By default JSON Schema allows additional properties, which can potentially lead to mass assignment issues, where unspecified fields are passed to the API without validation. Disable them with `additionalProperties: false` or add `maxProperties`"
+        },
+        {
+          "name": "owasp:api3:2023-constrained-unevaluatedProperties",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "By default JSON Schema allows unevaluated properties, which can potentially lead to mass assignment issues, where unspecified fields are passed to the API without validation. Disable them with `unevaluatedProperties: false` or add `maxProperties`"
+        },
+        {
+          "name": "owasp:api3:2023-no-additionalProperties",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "By default JSON Schema allows additional properties, which can potentially lead to mass assignment issues, where unspecified fields are passed to the API without validation. Disable them with `additionalProperties: false` or add `maxProperties`."
+        },
+        {
+          "name": "owasp:api3:2023-no-unevaluatedProperties",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "By default JSON Schema allows unevaluated properties, which can potentially lead to mass assignment issues, where unspecified fields are passed to the API without validation. Disable them with `unevaluatedProperties: false` or add `maxProperties`."
+        },
+        {
+          "name": "owasp:api4:2023-array-limit",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Array size should be limited to mitigate resource exhaustion attacks. This can be done using `maxItems`. You should ensure that the subschema in `items` is constrained too."
+        },
+        {
+          "name": "owasp:api4:2023-integer-format",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Integers should be limited to mitigate resource exhaustion attacks. Specifying whether int32 or int64 is expected via `format`."
+        },
+        {
+          "name": "owasp:api4:2023-integer-limit",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Integers should be limited to mitigate resource exhaustion attacks. This can be done using `minimum` and `maximum`, which can with e.g.: avoiding negative numbers when positive are expected, or reducing unreasonable iterations like doing something 1000 times when 10 is expected."
+        },
+        {
+          "name": "owasp:api4:2023-integer-limit-legacy",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Integers should be limited to mitigate resource exhaustion attacks. This can be done using `minimum` and `maximum`, which can with e.g.: avoiding negative numbers when positive are expected, or reducing unreasonable iterations like doing something 1000 times when 10 is expected."
+        },
+        {
+          "name": "owasp:api4:2023-rate-limit",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Define proper rate limiting to avoid attackers overloading the API. There are many ways to implement rate-limiting, but most of them involve using HTTP headers, and there are two popular ways to do that:\n\nIETF Draft HTTP RateLimit Headers:. https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/\n\nCustomer headers like X-Rate-Limit-Limit (Twitter: https://developer.twitter.com/en/docs/twitter-api/rate-limits) or X-RateLimit-Limit (GitHub: https://docs.github.com/en/rest/overview/resources-in-the-rest-api)"
+        },
+        {
+          "name": "owasp:api4:2023-rate-limit-responses-429",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "OWASP API Security recommends defining schemas for all responses, even errors. A HTTP 429 response signals the API client is making too many requests, and will supply information about when to retry so that the client can back off calmly without everything breaking. Defining this response is important not just for documentation, but to empower contract testing to make sure the proper JSON structure is being returned instead of leaking implementation details in backtraces. It also ensures your API/framework/gateway actually has rate limiting set up."
+        },
+        {
+          "name": "owasp:api4:2023-rate-limit-retry-after",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Define proper rate limiting to avoid attackers overloading the API. Part of that involves setting a Retry-After header so well meaning consumers are not polling and potentially exacerbating problems."
+        },
+        {
+          "name": "owasp:api4:2023-string-limit",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "String size should be limited to mitigate resource exhaustion attacks. This can be done using `maxLength`, `enum` or `const`."
+        },
+        {
+          "name": "owasp:api4:2023-string-restricted",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "To avoid unexpected values being sent or leaked, strings should have a `format`, RegEx `pattern`, `enum`, or `const`."
+        },
+        {
+          "name": "owasp:api5:2023-admin-security-unique",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": ""
+        },
+        {
+          "name": "owasp:api7:2023-concerning-url-parameter",
+          "dimension": "SEC",
+          "severity": "INFO",
+          "enabled": true,
+          "description": "Using external resource based on user input for webhooks, file fetching from URLs, custom SSO, URL previews, or redirects, can lead to a wide variety of security issues.\n\nLearn more about Server Side Request Forgery here: https://owasp.org/API-Security/editions/2023/en/0xa7-server-side-request-forgery/"
+        },
+        {
+          "name": "owasp:api8:2023-define-cors-origin",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Setting up CORS headers will control which websites can make browser-based HTTP requests to your API, using either the wildcard \"*\" to allow any origin, or \"null\" to disable any origin. Alternatively you can use \"Access-Control-Allow-Origin: https://example.com\" to indicate that only requests originating from the specified domain (https://example.com) are allowed to access its resources.\n\nMore about CORS here: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS."
+        },
+        {
+          "name": "owasp:api8:2023-define-error-responses-401",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "OWASP API Security recommends defining schemas for all responses, even errors. The 401 describes what happens when a request is unauthorized, so its important to define this not just for documentation, but to empower contract testing to make sure the proper JSON structure is being returned instead of leaking implementation details in backtraces."
+        },
+        {
+          "name": "owasp:api8:2023-define-error-responses-500",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "OWASP API Security recommends defining schemas for all responses, even errors. The 500 describes what happens when a request fails with an internal server error, so its important to define this not just for documentation, but to empower contract testing to make sure the proper JSON structure is being returned instead of leaking implementation details in backtraces."
+        },
+        {
+          "name": "owasp:api8:2023-define-error-validation",
+          "dimension": "SEC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Carefully define schemas for all the API responses, including either 400, 422 or 4XX responses which describe errors caused by invalid requests."
+        },
+        {
+          "name": "owasp:api8:2023-no-scheme-http",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Server interactions must use the http protocol as it's inherently insecure and can lead to PII and other sensitive information being leaked through traffic sniffing or man-in-the-middle attacks. Use the https or wss schemes instead.\n\nLearn more about the importance of TLS (over SSL) here: https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html"
+        },
+        {
+          "name": "owasp:api8:2023-no-server-http",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Server interactions must not use the http:// as it's inherently insecure and can lead to PII and other sensitive information being leaked through traffic sniffing or man-in-the-middle attacks. Use https:// or wss:// protocols instead.\n\nLearn more about the importance of TLS (over SSL) here: https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html"
+        },
+        {
+          "name": "owasp:api9:2023-inventory-access",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Servers are required to use vendor extension x-internal set to true or false to explicitly explain the audience for the API, which will be picked up by most documentation tools."
+        },
+        {
+          "name": "owasp:api9:2023-inventory-environment",
+          "dimension": "SEC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Make it clear which servers are expected to run as which environment to avoid unexpected problems, exposing test data to the public, or letting bad actors bypass security measures to get to production-like environments."
+        },
+        {
+          "name": "path-declarations-must-exist",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#path-declarations-must-exist"
+        },
+        {
+          "name": "path-keys-no-trailing-slash",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#path-keys-no-trailing-slash"
+        },
+        {
+          "name": "path-not-include-query",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Path must not include query string.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#path-not-include-query"
+        },
+        {
+          "name": "path-params",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Path parameters must be defined and valid.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#path-params"
+        },
+        {
+          "name": "tag-description",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Tag object must have \"description\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#tag-description"
+        },
+        {
+          "name": "typed-enum",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Enum values must respect the specified type.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/openapi-rules.md#typed-enum"
+        }
+      ]
+    },
+    "ASYNCAPI": {
+      "coverage": [
+        {
+          "dimension": "FC",
+          "enabled": {
+            "WARNING": 21,
+            "ERROR": 23,
+            "INFO": 3
+          }
+        }
+      ],
+      "rules": [
+        {
+          "name": "asyncapi-3-channel-no-empty-parameter",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Channel address must not have empty parameter substitution pattern.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-channel-no-empty-parameter"
+        },
+        {
+          "name": "asyncapi-3-channel-no-query-nor-fragment",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Channel address must not include query (\"?\") or fragment (\"#\") delimiter.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-channel-no-query-nor-fragment"
+        },
+        {
+          "name": "asyncapi-3-channel-no-trailing-slash",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Channel address must not end with slash.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-channel-no-trailing-slash"
+        },
+        {
+          "name": "asyncapi-3-channel-servers",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Channel servers must be defined in the \"servers\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-channel-servers"
+        },
+        {
+          "name": "asyncapi-3-document-resolved",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Checking if the AsyncAPI v3 document has valid structure after resolving references.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-document-resolved"
+        },
+        {
+          "name": "asyncapi-3-document-unresolved",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Checking if the AsyncAPI v3 document has valid structure before resolving references.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-document-unresolved"
+        },
+        {
+          "name": "asyncapi-3-headers-schema-type-object",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Headers schema type must be \"object\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-headers-schema-type-object"
+        },
+        {
+          "name": "asyncapi-3-operation-description",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation \"description\" must be present and non-empty string.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-operation-description"
+        },
+        {
+          "name": "asyncapi-3-operation-security",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Operation have to reference a defined security schemes.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-operation-security"
+        },
+        {
+          "name": "asyncapi-3-payload-unsupported-schemaFormat",
+          "dimension": "FC",
+          "severity": "INFO",
+          "enabled": true,
+          "description": "Message schema validation is only supported with default unspecified \"schemaFormat\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-payload-unsupported-schemaFormat"
+        },
+        {
+          "name": "asyncapi-3-server-no-empty-variable",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Server host and pathname must not have empty variable substitution pattern.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-server-no-empty-variable"
+        },
+        {
+          "name": "asyncapi-3-server-no-trailing-slash",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Server host must not end with slash.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-server-no-trailing-slash"
+        },
+        {
+          "name": "asyncapi-3-server-not-example-com",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Server host must not point at example.com.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-server-not-example-com"
+        },
+        {
+          "name": "asyncapi-3-tag-description",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Tag object must have \"description\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-tag-description"
+        },
+        {
+          "name": "asyncapi-3-tags",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "AsyncAPI document must have non-empty \"tags\" array.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-tags"
+        },
+        {
+          "name": "asyncapi-3-tags-alphabetical",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "AsyncAPI object must have alphabetical \"tags\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-tags-alphabetical"
+        },
+        {
+          "name": "asyncapi-3-tags-uniqueness",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Each tag must have a unique name.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-3-tags-uniqueness"
+        },
+        {
+          "name": "asyncapi-channel-no-empty-parameter",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Channel path must not have empty parameter substitution pattern.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-channel-no-empty-parameter"
+        },
+        {
+          "name": "asyncapi-channel-no-query-nor-fragment",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Channel path must not include query (\"?\") or fragment (\"#\") delimiter.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-channel-no-query-nor-fragment"
+        },
+        {
+          "name": "asyncapi-channel-no-trailing-slash",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Channel path must not end with slash.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-channel-no-trailing-slash"
+        },
+        {
+          "name": "asyncapi-channel-parameters",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Channel parameters must be defined and there must be no redundant parameters.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-channel-parameters"
+        },
+        {
+          "name": "asyncapi-channel-servers",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Channel servers must be defined in the \"servers\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-channel-servers"
+        },
+        {
+          "name": "asyncapi-headers-schema-type-object",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Headers schema type must be \"object\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-headers-schema-type-object"
+        },
+        {
+          "name": "asyncapi-info-contact",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Info object must have \"contact\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-info-contact"
+        },
+        {
+          "name": "asyncapi-info-contact-properties",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Contact object must have \"name\", \"url\" and \"email\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-info-contact-properties"
+        },
+        {
+          "name": "asyncapi-info-description",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Info \"description\" must be present and non-empty string.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-info-description"
+        },
+        {
+          "name": "asyncapi-info-license",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Info object must have \"license\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-info-license"
+        },
+        {
+          "name": "asyncapi-info-license-url",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "License object must include \"url\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-info-license-url"
+        },
+        {
+          "name": "asyncapi-latest-version",
+          "dimension": "FC",
+          "severity": "INFO",
+          "enabled": true,
+          "description": "Checking if the AsyncAPI document is using the latest version.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-latest-version"
+        },
+        {
+          "name": "asyncapi-message-examples",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Examples of message object should follow by \"payload\" and \"headers\" schemas.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-message-examples"
+        },
+        {
+          "name": "asyncapi-message-messageId-uniqueness",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "\"messageId\" must be unique across all the messages.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-message-messageId-uniqueness"
+        },
+        {
+          "name": "asyncapi-operation-description",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Operation \"description\" must be present and non-empty string.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-operation-description"
+        },
+        {
+          "name": "asyncapi-operation-operationId",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Operation must have \"operationId\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-operation-operationId"
+        },
+        {
+          "name": "asyncapi-operation-operationId-uniqueness",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "\"operationId\" must be unique across all the operations.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-operation-operationId-uniqueness"
+        },
+        {
+          "name": "asyncapi-operation-security",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Operation have to reference a defined security schemes.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-operation-security"
+        },
+        {
+          "name": "asyncapi-parameter-description",
+          "dimension": "DX",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Parameter objects must have \"description\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-parameter-description"
+        },
+        {
+          "name": "asyncapi-payload",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Payloads must be valid against AsyncAPI Schema object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-payload"
+        },
+        {
+          "name": "asyncapi-payload-default",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Default must be valid against its defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-payload-default"
+        },
+        {
+          "name": "asyncapi-payload-examples",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Examples must be valid against their defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-payload-examples"
+        },
+        {
+          "name": "asyncapi-payload-unsupported-schemaFormat",
+          "dimension": "FC",
+          "severity": "INFO",
+          "enabled": true,
+          "description": "Message schema validation is only supported with default unspecified \"schemaFormat\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-payload-unsupported-schemaFormat"
+        },
+        {
+          "name": "asyncapi-schema",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Validate structure of AsyncAPI specification.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-schema"
+        },
+        {
+          "name": "asyncapi-schema-default",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Default must be valid against its defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-schema-default"
+        },
+        {
+          "name": "asyncapi-schema-examples",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Examples must be valid against their defined schema.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-schema-examples"
+        },
+        {
+          "name": "asyncapi-server-no-empty-variable",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Server URL must not have empty variable substitution pattern.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-server-no-empty-variable"
+        },
+        {
+          "name": "asyncapi-server-no-trailing-slash",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Server URL must not end with slash.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-server-no-trailing-slash"
+        },
+        {
+          "name": "asyncapi-server-not-example-com",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Server URL must not point at example.com.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-server-not-example-com"
+        },
+        {
+          "name": "asyncapi-server-security",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Server have to reference a defined security schemes.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-server-security"
+        },
+        {
+          "name": "asyncapi-server-variables",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Server variables must be defined and there must be no redundant variables.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-server-variables"
+        },
+        {
+          "name": "asyncapi-servers",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "AsyncAPI object must have non-empty \"servers\" object.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-servers"
+        },
+        {
+          "name": "asyncapi-tag-description",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "Tag object must have \"description\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-tag-description"
+        },
+        {
+          "name": "asyncapi-tags",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "AsyncAPI object must have non-empty \"tags\" array.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-tags"
+        },
+        {
+          "name": "asyncapi-tags-alphabetical",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": false,
+          "description": "AsyncAPI object must have alphabetical \"tags\".",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-tags-alphabetical"
+        },
+        {
+          "name": "asyncapi-tags-uniqueness",
+          "dimension": "FC",
+          "severity": "ERROR",
+          "enabled": true,
+          "description": "Each tag must have a unique name.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-tags-uniqueness"
+        },
+        {
+          "name": "asyncapi-unused-components-schema",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Potentially unused components schema has been detected.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-unused-components-schema"
+        },
+        {
+          "name": "asyncapi-unused-components-server",
+          "dimension": "FC",
+          "severity": "WARNING",
+          "enabled": true,
+          "description": "Potentially unused components server has been detected.",
+          "documentationUrl": "https://meta.stoplight.io/docs/spectral/docs/reference/asyncapi-rules.md#asyncapi-unused-components-server"
+        }
+      ]
+    }
+  }
+}

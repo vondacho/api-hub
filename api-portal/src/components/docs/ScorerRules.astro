@@ -1,0 +1,174 @@
+---
+/*
+ * The scorer's effective ruleset for one contract type, grouped by dimension.
+ *
+ * The data comes from src/data/scorer-rules.json, exported by the scorer itself
+ * (`npm run export:rules` in api-scorer). It is not transcribed from
+ * evaluation.yaml: the rules that actually run only exist after Spectral's
+ * rulesets are composed and the evaluation overlay is applied, so any
+ * hand-written list here would be a second, drifting implementation of that
+ * composition.
+ */
+import rules from '../../data/scorer-rules.json';
+
+interface Props {
+	contract: 'OPENAPI' | 'ASYNCAPI';
+}
+
+const { contract } = Astro.props;
+
+const contracts = rules.contracts as Record<
+	string,
+	{
+		coverage: { dimension: string; enabled: Record<string, number> }[];
+		rules: {
+			name: string;
+			dimension: string;
+			severity: string;
+			enabled: boolean;
+			description?: string;
+			documentationUrl?: string;
+		}[];
+	}
+>;
+
+const entry = contracts[contract];
+const dimensions = rules.dimensions as Record<string, { intent: string }>;
+
+/* Dimensions in the order the scorer declares them, keeping empty ones out. */
+const grouped = Object.keys(dimensions)
+	.map((dimension) => ({
+		dimension,
+		intent: dimensions[dimension]?.intent,
+		rules: (entry?.rules ?? []).filter((rule) => rule.dimension === dimension),
+	}))
+	.filter((group) => group.rules.length > 0);
+
+const total = entry?.rules.length ?? 0;
+const disabled = (entry?.rules ?? []).filter((rule) => !rule.enabled).length;
+---
+
+<p class="summary">
+	<strong>{total}</strong> rules run against a <code>{contract}</code> contract{
+		disabled > 0 && (
+			<>
+				, of which <strong>{disabled}</strong> {disabled === 1 ? 'is' : 'are'} disabled by
+				default and therefore counts towards neither findings nor coverage
+			</>
+		)
+	}.
+</p>
+
+{
+	grouped.map(({ dimension, intent, rules: dimensionRules }) => (
+		<section class="dimension">
+			<h3 id={`${contract.toLowerCase()}-${dimension.toLowerCase()}`}>
+				{dimension} <span class="count">{dimensionRules.length} rules</span>
+			</h3>
+			<p class="intent">{intent}</p>
+			<table>
+				<thead>
+					<tr>
+						<th>Rule</th>
+						<th>Severity</th>
+						<th>What it checks</th>
+					</tr>
+				</thead>
+				<tbody>
+					{dimensionRules.map((rule) => (
+						<tr class={rule.enabled ? undefined : 'is-disabled'}>
+							<td>
+								{rule.documentationUrl ? (
+									<a href={rule.documentationUrl} rel="noreferrer">
+										<code>{rule.name}</code>
+									</a>
+								) : (
+									<code>{rule.name}</code>
+								)}
+								{!rule.enabled && <span class="badge">off</span>}
+							</td>
+							<td>
+								<span class={`severity severity--${rule.severity.toLowerCase()}`}>
+									{rule.severity}
+								</span>
+							</td>
+							<td>{rule.description ?? '—'}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</section>
+	))
+}
+
+<style>
+	.summary {
+		padding: 0.75rem 1rem;
+		border-inline-start: 3px solid var(--sl-color-accent);
+		background: var(--sl-color-gray-6);
+		border-radius: 0 0.5rem 0.5rem 0;
+	}
+
+	.dimension h3 {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.count,
+	.badge {
+		font-size: var(--sl-text-xs);
+		font-weight: 600;
+		color: var(--sl-color-gray-2);
+		background: var(--sl-color-gray-6);
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 999px;
+		padding: 0.1rem 0.6rem;
+	}
+
+	.badge {
+		margin-inline-start: 0.4rem;
+		text-transform: uppercase;
+	}
+
+	.intent {
+		color: var(--sl-color-gray-3);
+		margin-block-start: 0;
+	}
+
+	table {
+		display: table;
+		width: 100%;
+	}
+
+	td:first-child {
+		white-space: nowrap;
+	}
+
+	.is-disabled {
+		opacity: 0.6;
+	}
+
+	.severity {
+		font-size: var(--sl-text-xs);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+
+	.severity--error {
+		color: var(--sl-color-red);
+	}
+
+	.severity--warning {
+		color: var(--sl-color-orange);
+	}
+
+	.severity--info {
+		color: var(--sl-color-blue);
+	}
+
+	.severity--hint {
+		color: var(--sl-color-gray-3);
+	}
+</style>

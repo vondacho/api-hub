@@ -1,0 +1,20 @@
+---
+title: MCP
+description: Exposing catalogued APIs to AI agents over the Model Context Protocol.
+---
+
+[MCP](https://modelcontextprotocol.io) is the protocol AI agents use to discover
+and call tools. A catalogue of well-described API contracts is close to what an
+MCP server needs: operations, parameters, and descriptions an agent can reason
+about.
+
+The dimensions that matter most for this are **DX** (are operations and
+parameters described well enough for a caller that cannot ask a human?) and
+**SEC** (what does the agent need to present to be allowed through?). See the
+[design guidelines](/doc/design-guidelines/).
+
+:::note[Not implemented yet]
+The platform exposes no MCP server today. This page records the direction only.
+Replace it with the connection details, the tool-mapping rules and the auth model
+once something is actually shipped.
+:::

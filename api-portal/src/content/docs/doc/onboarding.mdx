@@ -1,0 +1,31 @@
+---
+title: Onboarding
+description: Submitting an API contract for parsing, validation, scoring and registration.
+---
+
+Onboarding is the entry point of the lifecycle: a contract is read, parsed and
+validated for its format, scored against the [design guidelines](/doc/design-guidelines/),
+and — if it passes — registered so it shows up in the [Catalog](/doc/catalog/).
+
+## Supported formats
+
+| Format | Notes |
+|---|---|
+| OpenAPI | 3.0.x and 3.1.x |
+| AsyncAPI | event-driven contracts |
+| GraphQL SDL | schema definition language |
+| WSDL | SOAP service descriptions |
+
+## The pipeline
+
+1. **Read** — the contract is fetched and its format detected.
+2. **Parse & validate** — format-specific parsing; a document that will not parse stops here.
+3. **Overlay** — an optional [OpenAPI Overlay](https://spec.openapis.org/overlay/v1.0.0.html) is applied.
+4. **Score** — the contract is graded, producing a scorecard per dimension.
+5. **Register** — the result is persisted and becomes discoverable.
+
+:::note[To be completed]
+The concrete request/response shape of the onboarding endpoint should be
+documented here, generated from or linked to the OpenAPI contract rather than
+transcribed by hand.
+:::

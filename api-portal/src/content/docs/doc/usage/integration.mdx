@@ -1,0 +1,19 @@
+---
+title: Integration
+description: Consuming a catalogued API from your own service.
+---
+
+How to go from a catalogued contract to a working client.
+
+## Generate, do not hand-write
+
+The contract is the source of truth. Generate your client from the resolved
+contract published in the [Catalog](/doc/catalog/) rather than transcribing
+types by hand — a hand-written client silently drifts, a generated one fails the
+build when the contract moves.
+
+:::note[To be completed]
+This page should carry the concrete recipe: where to fetch the resolved contract,
+a generator invocation per supported language, and the versioning policy that
+tells a consumer when regenerating is required.
+:::

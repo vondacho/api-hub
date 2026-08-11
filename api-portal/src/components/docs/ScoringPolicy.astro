@@ -1,0 +1,94 @@
+---
+/*
+ * The scoring policy, rendered from the scorer's own export.
+ *
+ * Styled with Starlight's CSS variables, not Tailwind: global.css is imported
+ * only by the portal's Layout, so /doc/* never receives Tailwind's preflight.
+ */
+import rules from '../../data/scorer-rules.json';
+
+const { penalties, weights, grades } = rules.policy;
+const dimensions = rules.dimensions as Record<string, { intent: string }>;
+---
+
+<h3>What a broken rule costs</h3>
+<p>
+	A rule counts once however often it fires, priced by the severity its ruleset
+	gives it:
+</p>
+<table>
+	<thead>
+		<tr><th>Severity</th><th>Cost</th></tr>
+	</thead>
+	<tbody>
+		{
+			Object.entries(penalties).map(([severity, cost]) => (
+				<tr>
+					<td><code>{severity}</code></td>
+					<td>{cost}</td>
+				</tr>
+			))
+		}
+	</tbody>
+</table>
+
+<h3>How dimensions are weighted</h3>
+<table>
+	<thead>
+		<tr><th>Dimension</th><th>Weight</th><th>What it measures</th></tr>
+	</thead>
+	<tbody>
+		{
+			Object.entries(weights).map(([dimension, weight]) => (
+				<tr>
+					<td><strong>{dimension}</strong></td>
+					<td>{weight}</td>
+					<td>{dimensions[dimension]?.intent}</td>
+				</tr>
+			))
+		}
+	</tbody>
+</table>
+
+<h3>Grade bands</h3>
+<ul class="grade-bands">
+	{
+		grades.map(({ grade, min }) => (
+			<li>
+				<span class="grade">{grade}</span>
+				<span class="min">≥ {min}</span>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.grade-bands {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+		gap: 0.5rem;
+		margin-block: 1rem;
+		padding: 0;
+		list-style: none;
+	}
+
+	.grade-bands li {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 0.5rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 0.5rem;
+		background: var(--sl-color-gray-6);
+	}
+
+	.grade {
+		font-weight: 700;
+		font-size: var(--sl-text-lg);
+	}
+
+	.min {
+		font-size: var(--sl-text-xs);
+		color: var(--sl-color-gray-3);
+	}
+</style>

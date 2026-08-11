@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+/*
+ * Portal theme. Imported by src/layouts/Layout.astro only — the documentation
+ * under /doc/* is themed by Starlight and must not receive Tailwind's preflight,
+ * which would reset Starlight's own base styles.
+ *
+ * Dark mode follows the OS. Starlight ships an explicit toggle; if the portal
+ * ever grows one too, switch this to a `@custom-variant dark` driven by a
+ * data-attribute so both halves of the site can be told apart from one source.
+ */
+
+@theme {
+  --color-ink: oklch(0.24 0.03 255);
+  --color-ink-muted: oklch(0.52 0.03 255);
+  --color-brand: oklch(0.52 0.19 262);
+  --color-brand-strong: oklch(0.44 0.2 262);
+  --color-night: oklch(0.19 0.03 255);
+  --color-night-raised: oklch(0.24 0.03 255);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

@@ -1,0 +1,78 @@
+---
+/*
+ * Contact details are PLACEHOLDERS on the reserved example.org domain — replace
+ * them with real addresses (or drop the column) before this goes anywhere public.
+ * An address that looks real but is not is worse than an obvious stand-in.
+ */
+const year = new Date().getFullYear();
+
+const columns = [
+	{
+		title: 'Documentation',
+		links: [
+			{ label: 'Overview', href: '/doc/' },
+			{ label: 'Onboarding', href: '/doc/onboarding/' },
+			{ label: 'Design guidelines', href: '/doc/design-guidelines/' },
+			{ label: 'Scoring', href: '/doc/design-guidelines/scoring/' },
+		],
+	},
+	{
+		title: 'Usage',
+		links: [
+			{ label: 'Integration', href: '/doc/usage/integration/' },
+			{ label: 'Mocking', href: '/doc/usage/mocking/' },
+			{ label: 'MCP', href: '/doc/usage/mcp/' },
+		],
+	},
+	{
+		title: 'Platform',
+		links: [
+			{ label: 'Catalog', href: '/doc/catalog/' },
+			{ label: 'Service health', href: '/healthz' },
+		],
+	},
+	{
+		title: 'Contact',
+		links: [
+			{ label: 'Platform team', href: 'mailto:api-hub@example.org' },
+			{ label: 'Report an issue', href: 'mailto:api-hub-support@example.org' },
+		],
+	},
+];
+---
+
+<footer class="border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-night-raised">
+	<div class="mx-auto w-full max-w-5xl px-6 py-14">
+		<div class="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+			{
+				columns.map(({ title, links }) => (
+					<nav aria-labelledby={`footer-${title.toLowerCase()}`}>
+						<h2
+							id={`footer-${title.toLowerCase()}`}
+							class="text-xs font-semibold tracking-[0.14em] uppercase"
+						>
+							{title}
+						</h2>
+						<ul class="mt-4 space-y-2 text-sm">
+							{links.map(({ label, href }) => (
+								<li>
+									<a
+										href={href}
+										class="text-ink-muted underline-offset-4 hover:text-brand hover:underline dark:text-slate-400 dark:hover:text-sky-400"
+									>
+										{label}
+									</a>
+								</li>
+							))}
+						</ul>
+					</nav>
+				))
+			}
+		</div>
+
+		<div class="mt-12 flex flex-col gap-2 border-t border-slate-200 pt-6 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:text-slate-400">
+			<p>© {year} API Hub. All rights reserved.</p>
+			<p>API contract lifecycle platform — parse, validate, score, register.</p>
+		</div>
+	</div>
+</footer>

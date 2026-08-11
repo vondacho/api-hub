@@ -1,0 +1,89 @@
+---
+/*
+ * The three ways into the platform. `status` is what is actually reachable
+ * today: the Catalogue UI and the MCP registry are not built yet, so their
+ * panels link to the documentation that describes them rather than to a route
+ * that would 404. Flip a panel to `live` when its section ships.
+ */
+const panels = [
+	{
+		title: 'Documentation',
+		description:
+			'How to onboard a contract, the design guidelines it is scored against, and how to consume what has been registered.',
+		href: '/doc/',
+		cta: 'Browse the docs',
+		status: 'live',
+		icon: 'M5 4h9l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm8 0v6h6M8 14h8M8 17.5h5',
+	},
+	{
+		title: 'Catalog',
+		description:
+			'Every registered API with its resolved contract, its scorecard and its revision history — searchable, without asking anyone.',
+		href: '/doc/catalog/',
+		cta: 'About the catalog',
+		status: 'soon',
+		icon: 'M4 6.5A2.5 2.5 0 0 1 6.5 4H19v13H6.5A2.5 2.5 0 0 0 4 19.5V6.5Zm0 13A2.5 2.5 0 0 0 6.5 22H19v-5M9 8h6',
+	},
+	{
+		title: 'MCP registry',
+		description:
+			'Catalogued APIs exposed as tools an AI agent can discover and call over the Model Context Protocol.',
+		href: '/doc/usage/mcp/',
+		cta: 'Read the direction',
+		status: 'planned',
+		icon: 'M12 3v4m0 10v4M3 12h4m10 0h4M7.5 7.5l2.8 2.8m3.4 3.4 2.8 2.8m0-9-2.8 2.8m-3.4 3.4-2.8 2.8',
+	},
+] as const;
+
+const badges = {
+	live: undefined,
+	soon: 'Coming soon',
+	planned: 'Planned',
+} as const;
+---
+
+<section aria-labelledby="sections-title" class="mx-auto w-full max-w-5xl px-6 py-16 sm:py-20">
+	<h2 id="sections-title" class="sr-only">Sections</h2>
+
+	<ul class="grid gap-6 md:grid-cols-3">
+		{
+			panels.map(({ title, description, href, cta, status, icon }) => (
+				<li class="h-full">
+					<a
+						href={href}
+						class="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-7 shadow-sm transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md motion-reduce:hover:translate-y-0 dark:border-slate-700 dark:bg-night-raised dark:hover:border-sky-400"
+					>
+						<span class="flex items-center justify-between gap-3">
+							<svg
+								viewBox="0 0 24 24"
+								class="h-8 w-8 text-brand dark:text-sky-400"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.6"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d={icon} />
+							</svg>
+							{badges[status] && (
+								<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tracking-wide text-ink-muted uppercase dark:bg-slate-700 dark:text-slate-300">
+									{badges[status]}
+								</span>
+							)}
+						</span>
+
+						<h3 class="mt-5 text-xl font-semibold">{title}</h3>
+						<p class="mt-2 grow text-ink-muted dark:text-slate-400">{description}</p>
+						<span class="mt-6 font-semibold text-brand dark:text-sky-400">
+							{cta}
+							<span aria-hidden="true" class="inline-block transition group-hover:translate-x-1 motion-reduce:transition-none">
+								&nbsp;→
+							</span>
+						</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</section>

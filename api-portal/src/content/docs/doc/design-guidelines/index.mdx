@@ -1,0 +1,61 @@
+---
+title: Design guidelines
+description: The dimensions an API contract is scored against, and what each one asks of a design.
+---
+
+Every onboarded contract is graded along a set of **dimensions**. Each dimension
+groups rules that ask the same kind of question about a design. This page is the
+human-readable side of that grading: what each dimension is for, and what a good
+contract looks like under it.
+
+Grades are produced by the scoring service; which rules run and how much each
+breach costs is deployment configuration, so a low score is a signal to read the
+guideline below, not a verdict on the API itself.
+
+## Foundational Compliance (FC)
+
+*Is the document structurally valid at all?*
+
+Path templating, operation parameters, unique operation IDs, typed enums, no
+`$ref` siblings, no unused components. Everything here is table stakes: a
+contract that fails FC will break generators and validators downstream, whatever
+its other merits.
+
+## Security (SEC)
+
+*What is the trust and risk posture?*
+
+Whether operations declare the security they require, and the OWASP API
+Security checks on top. A contract that describes no authentication describes an
+open API — if that is not the intent, it is a contract bug.
+
+## Developer Experience (DX)
+
+*Can a human, or a generator, make sense of it?*
+
+Descriptions on operations and parameters, tags, a contact, a licence, a success
+response. Two of these are graded as hard errors rather than style nits:
+`info-contact` and `info-description`. An API nobody can identify the owner of is
+an onboarding problem.
+
+## Mock Readiness (MR)
+
+*Is there enough here to stand a server up against it?*
+
+Valid media and schema examples, `servers` entries. This dimension is what makes
+[mocking](/doc/usage/mocking/) possible — a contract that scores well here can
+be served as a mock without anyone writing fixtures by hand.
+
+## Writing a guideline page
+
+Guidelines are MDX under `src/content/docs/doc/`. Prose is editorial and lives
+here; the ruleset that enforces it is configuration and lives with the scoring
+service. Keep them linked by rule name rather than generating one from the
+other — the machine-checkable rule and the explanation of *why* have different
+audiences and change at different rates.
+
+:::caution[Not yet measured]
+Some dimensions exist in the scorecard contract but nothing measures them today,
+so they are never returned. Only FC, SEC, DX and MR are emitted. Document a
+dimension here once something actually scores it.
+:::

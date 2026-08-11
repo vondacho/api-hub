@@ -1,0 +1,179 @@
+---
+/*
+ * PLACEHOLDER COPY — these quotes are illustrative, not real testimonials, and
+ * they are attributed to roles rather than to people on purpose. Replace them
+ * with quotes you have actually been given (and attribute them properly) before
+ * this page is shown to anyone outside the team.
+ */
+const testimonials = [
+	{
+		quote:
+			'The contract stopped being the thing we wrote after the fact. It is now the thing the pipeline checks, and the arguments about response shapes happen in review instead of in production.',
+		role: 'Platform engineering',
+	},
+	{
+		quote:
+			'A score per dimension turned "this spec feels sloppy" into a conversation about which rule fired and why it matters. Reviews got shorter and a lot less personal.',
+		role: 'API governance',
+	},
+	{
+		quote:
+			'Being able to find an API, read its contract and generate a client without asking anybody anything is the whole point. Discovery used to be a Slack message.',
+		role: 'Consumer team lead',
+	},
+	{
+		quote:
+			'API-first only works if the specification is enforceable. Registering it is what makes it enforceable — everything downstream can then assume it is true.',
+		role: 'Architecture',
+	},
+	{
+		quote:
+			'Mock readiness sounded like a nice-to-have until we started standing up mocks straight from the contract. Integration work now starts before the provider ships.',
+		role: 'Integration engineering',
+	},
+];
+---
+
+<section aria-labelledby="testimonials-title" class="border-y border-slate-200 bg-slate-50 py-16 sm:py-20 dark:border-slate-800 dark:bg-night-raised">
+	<div class="mx-auto w-full max-w-5xl px-6">
+		<h2 id="testimonials-title" class="text-2xl font-bold tracking-tight sm:text-3xl">
+			Why an API culture pays off
+		</h2>
+		<p class="mt-2 max-w-2xl text-ink-muted dark:text-slate-400">
+			What teams working API-first and contract-driven say changes once the contract
+			is the source of truth.
+		</p>
+
+		<div class="group relative mt-10" data-carousel>
+			<ul
+				data-carousel-track
+				tabindex="0"
+				aria-label="Testimonials"
+				class="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand [&::-webkit-scrollbar]:hidden motion-reduce:scroll-auto"
+			>
+				{
+					testimonials.map(({ quote, role }, index) => (
+						<li
+							data-carousel-slide
+							aria-roledescription="slide"
+							aria-label={`${index + 1} of ${testimonials.length}`}
+							class="w-full shrink-0 snap-center"
+						>
+							<figure class="flex h-full flex-col justify-between rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10 dark:border-slate-700 dark:bg-night">
+								<blockquote class="text-lg text-balance sm:text-xl">
+									<p>“{quote}”</p>
+								</blockquote>
+								<figcaption class="mt-6 text-sm font-semibold tracking-wide text-ink-muted uppercase dark:text-slate-400">
+									{role}
+								</figcaption>
+							</figure>
+						</li>
+					))
+				}
+			</ul>
+
+			<div class="mt-6 flex items-center justify-between gap-4">
+				<div class="flex gap-2" data-carousel-dots role="tablist" aria-label="Choose testimonial">
+					{
+						testimonials.map((_, index) => (
+							<button
+								type="button"
+								role="tab"
+								data-carousel-dot={index}
+								aria-label={`Testimonial ${index + 1}`}
+								aria-selected={index === 0 ? 'true' : 'false'}
+								class="h-2.5 w-2.5 rounded-full bg-slate-300 transition aria-selected:w-6 aria-selected:bg-brand dark:bg-slate-600 dark:aria-selected:bg-sky-400"
+							/>
+						))
+					}
+				</div>
+
+				<div class="flex gap-2">
+					<button
+						type="button"
+						data-carousel-prev
+						aria-label="Previous testimonial"
+						class="rounded-full border border-slate-300 p-2 transition hover:bg-white disabled:opacity-40 dark:border-slate-600 dark:hover:bg-night"
+					>
+						<svg viewBox="0 0 20 20" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+							<path d="M12.5 4 7 10l5.5 6" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</button>
+					<button
+						type="button"
+						data-carousel-next
+						aria-label="Next testimonial"
+						class="rounded-full border border-slate-300 p-2 transition hover:bg-white disabled:opacity-40 dark:border-slate-600 dark:hover:bg-night"
+					>
+						<svg viewBox="0 0 20 20" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+							<path d="M7.5 4 13 10l-5.5 6" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	/*
+	 * Scroll-snap carousel. The track is a real scroll container, so it works with
+	 * no JavaScript at all (swipe, keyboard, trackpad); the buttons and dots only
+	 * drive scrollLeft, and the active slide is read back from scroll position
+	 * rather than tracked in a variable that could disagree with what is on screen.
+	 */
+	const carousel = document.querySelector<HTMLElement>('[data-carousel]');
+	const track = carousel?.querySelector<HTMLElement>('[data-carousel-track]');
+
+	if (carousel && track) {
+		const slides = [...track.querySelectorAll<HTMLElement>('[data-carousel-slide]')];
+		const dots = [...carousel.querySelectorAll<HTMLButtonElement>('[data-carousel-dot]')];
+		const previous = carousel.querySelector<HTMLButtonElement>('[data-carousel-prev]');
+		const next = carousel.querySelector<HTMLButtonElement>('[data-carousel-next]');
+
+		const currentIndex = () => Math.round(track.scrollLeft / track.clientWidth);
+
+		const goTo = (index: number) => {
+			const target = (index + slides.length) % slides.length;
+			track.scrollTo({ left: target * track.clientWidth });
+		};
+
+		const sync = () => {
+			const index = currentIndex();
+			dots.forEach((dot, position) =>
+				dot.setAttribute('aria-selected', String(position === index)),
+			);
+		};
+
+		previous?.addEventListener('click', () => goTo(currentIndex() - 1));
+		next?.addEventListener('click', () => goTo(currentIndex() + 1));
+		dots.forEach((dot, index) => dot.addEventListener('click', () => goTo(index)));
+		track.addEventListener('scroll', () => requestAnimationFrame(sync), { passive: true });
+		window.addEventListener('resize', sync);
+		sync();
+
+		// Auto-advance, but never against the user: it stops while the pointer is
+		// over the carousel, while focus is inside it, while the tab is hidden, and
+		// entirely for anyone who has asked for reduced motion.
+		const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		let timer: ReturnType<typeof setInterval> | undefined;
+
+		const stop = () => {
+			if (timer) clearInterval(timer);
+			timer = undefined;
+		};
+
+		const start = () => {
+			if (timer || reducedMotion.matches || document.hidden) return;
+			timer = setInterval(() => goTo(currentIndex() + 1), 7000);
+		};
+
+		carousel.addEventListener('pointerenter', stop);
+		carousel.addEventListener('pointerleave', start);
+		carousel.addEventListener('focusin', stop);
+		carousel.addEventListener('focusout', start);
+		reducedMotion.addEventListener('change', () => (reducedMotion.matches ? stop() : start()));
+		document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+		start();
+	}
+</script>
