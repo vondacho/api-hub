@@ -11,16 +11,16 @@ image:
   # The image is built straight into the node's image store, never pulled.
   pullPolicy: Never
 
-# The scorer is deployed by helm/api-scorer, so point at it for real — that
-# path is the one worth exercising locally.
+# Both outbound adapters point at the real deployed services, so the whole
+# registration path is exercised locally.
 #
-# The registry stays on the in-memory dummy: api-registry is deployed, but
-# adapter/out/strapi sends no API token, so switching it also means granting the
-# "specification" permissions to Strapi's Public role in the admin UI. See
-# helm/README.md.
+# `strapi` only works once the "specification" permissions (find, findOne,
+# create, update) are granted to Strapi's Public role in the admin UI —
+# adapter/out/strapi sends no API token, so an ungranted role answers 403 and
+# every registration fails at the persistence step. See helm/README.md.
 app:
   registry:
-    adapter: dummy
+    adapter: strapi
   scorer:
     adapter: spectral
   extraConfig:
