@@ -91,15 +91,15 @@ cd api-scorer      && docker build -t api-scorer:dev .
 # api-registry-db first: Strapi migrates its schema on boot and crash-loops until the
 # database answers.
 helm upgrade --install api-registry-db helm/api-registry-db \
-  -n my-api-portal --create-namespace -f helm/api-registry-db/values-local.yaml
+  -n api-hub --create-namespace -f helm/api-registry-db/values-local.yaml
 helm upgrade --install api-registry helm/api-registry \
-  -n my-api-portal --create-namespace -f helm/api-registry/values-local.yaml
+  -n api-hub --create-namespace -f helm/api-registry/values-local.yaml
 helm upgrade --install api-onboarding helm/api-onboarding \
-  -n my-api-portal --create-namespace -f helm/api-onboarding/values-local.yaml
+  -n api-hub --create-namespace -f helm/api-onboarding/values-local.yaml
 helm upgrade --install api-portal helm/api-portal \
-  -n my-api-portal --create-namespace -f helm/api-portal/values-local.yaml
+  -n api-hub --create-namespace -f helm/api-portal/values-local.yaml
 helm upgrade --install api-scorer helm/api-scorer \
-  -n my-api-portal --create-namespace -f helm/api-scorer/values-local.yaml
+  -n api-hub --create-namespace -f helm/api-scorer/values-local.yaml
 ```
 
 **api-onboarding**

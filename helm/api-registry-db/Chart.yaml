@@ -14,8 +14,8 @@ keywords:
   - postgresql
   - strapi
   - api-governance
-home: https://github.com/obya/my-api-portal
+home: https://github.com/vondacho/api-hub
 sources:
-  - https://github.com/obya/my-api-portal/tree/main/api-registry-db
+  - https://github.com/vondacho/api-hub/tree/main/api-registry-db
 maintainers:
   - name: Olivier von Dach

@@ -2,7 +2,7 @@
 # (Rancher Desktop / Docker Desktop).
 #
 #   helm upgrade --install api-portal helm/api-portal \
-#     -n my-api-portal --create-namespace \
+#     -n api-hub --create-namespace \
 #     -f helm/api-portal/values-local.yaml
 
 image:

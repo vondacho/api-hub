@@ -32,7 +32,7 @@ helm.sh/chart: {{ include "api-portal.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/part-of: my-api-portal
+app.kubernetes.io/part-of: api-hub
 {{- end }}
 
 {{- define "api-portal.selectorLabels" -}}

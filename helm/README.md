@@ -1,6 +1,6 @@
 # Helm charts
 
-Deployment charts for the my-api-portal components. Following the repo's
+Deployment charts for the api-hub components. Following the repo's
 monorepo-of-standalone-modules convention, **each component gets its own
 independent chart** — there is no umbrella chart.
 
@@ -94,41 +94,41 @@ database that has to already be accepting connections.
 
 ```bash
 helm upgrade --install api-registry-db helm/api-registry-db \
-  --namespace my-api-portal --create-namespace \
+  --namespace api-hub --create-namespace \
   -f helm/api-registry-db/values-local.yaml
 
 helm upgrade --install api-registry helm/api-registry \
-  --namespace my-api-portal --create-namespace \
+  --namespace api-hub --create-namespace \
   -f helm/api-registry/values-local.yaml
 
 helm upgrade --install api-onboarding helm/api-onboarding \
-  --namespace my-api-portal --create-namespace \
+  --namespace api-hub --create-namespace \
   -f helm/api-onboarding/values-local.yaml
 
 helm upgrade --install api-portal helm/api-portal \
-  --namespace my-api-portal --create-namespace \
+  --namespace api-hub --create-namespace \
   -f helm/api-portal/values-local.yaml
 
 # Independent of the others — nothing else has to be up first.
 helm upgrade --install api-scorer helm/api-scorer \
-  --namespace my-api-portal --create-namespace \
+  --namespace api-hub --create-namespace \
   -f helm/api-scorer/values-local.yaml
 ```
 
 ## 3. Verify
 
 ```bash
-helm test api-registry-db -n my-api-portal
-helm test api-registry    -n my-api-portal
-helm test api-onboarding  -n my-api-portal
-helm test api-portal      -n my-api-portal
-helm test api-scorer      -n my-api-portal
+helm test api-registry-db -n api-hub
+helm test api-registry    -n api-hub
+helm test api-onboarding  -n api-hub
+helm test api-portal      -n api-hub
+helm test api-scorer      -n api-hub
 ```
 
 `api-onboarding` has no ingress by default:
 
 ```bash
-kubectl -n my-api-portal port-forward svc/api-onboarding 8080:8080
+kubectl -n api-hub port-forward svc/api-onboarding 8080:8080
 curl http://localhost:8080/actuator/health
 ```
 
@@ -144,7 +144,7 @@ curl http://api-portal.localhost/healthz     # {"status":"UP"}
 With `ingress.enabled=false` (the chart default), port-forward instead:
 
 ```bash
-kubectl -n my-api-portal port-forward svc/api-portal 4321:4321
+kubectl -n api-hub port-forward svc/api-portal 4321:4321
 ```
 
 `api-registry`'s `values-local.yaml` enables a Traefik ingress too, because the
@@ -160,7 +160,7 @@ database volume. `api-registry-db` is deliberately **not** exposed — reach it
 through the CMS, or with a shell:
 
 ```bash
-kubectl -n my-api-portal exec -it statefulset/api-registry-db -- psql -U strapi -d strapi
+kubectl -n api-hub exec -it statefulset/api-registry-db -- psql -U strapi -d strapi
 ```
 
 ## Pointing at real dependencies
@@ -172,7 +172,7 @@ Service the registry chart creates:
 
 ```bash
 helm upgrade --install api-onboarding helm/api-onboarding \
-  -n my-api-portal \
+  -n api-hub \
   -f helm/api-onboarding/values-local.yaml \
   --set app.registry.adapter=strapi
 ```
@@ -191,9 +191,9 @@ default, not a broken deployment.
 
 ```bash
 helm upgrade --install api-scorer helm/api-scorer \
-  --namespace my-api-portal -f helm/api-scorer/values-local.yaml
+  --namespace api-hub -f helm/api-scorer/values-local.yaml
 helm upgrade --install api-onboarding helm/api-onboarding \
-  --namespace my-api-portal -f helm/api-onboarding/values-local.yaml
+  --namespace api-hub -f helm/api-onboarding/values-local.yaml
 ```
 
 `app.spectral.baseUrl` defaults to `http://api-scorer:8081/api/v1`. Both halves
@@ -205,11 +205,11 @@ for exactly this reason.
 Submitting a candidate proves the link end to end:
 
 ```bash
-kubectl -n my-api-portal port-forward svc/api-onboarding 8080:8080
+kubectl -n api-hub port-forward svc/api-onboarding 8080:8080
 
 curl -X POST http://localhost:8080/api/v1/registrations \
   -H 'content-type: application/json' \
-  -d '{"source":"https://raw.githubusercontent.com/vondacho/my-api-portal/main/api-onboarding/src/test/resources/api/examples/oas/valid_candidate.openapi.yaml"}'
+  -d '{"source":"https://raw.githubusercontent.com/vondacho/api-hub/main/api-onboarding/src/test/resources/api/examples/oas/valid_candidate.openapi.yaml"}'
 ```
 
 A `201` carrying a `scorecard` with FC/SEC/DX/MR dimensions means the call

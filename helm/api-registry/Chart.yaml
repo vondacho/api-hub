@@ -14,8 +14,8 @@ keywords:
   - strapi
   - cms
   - api-governance
-home: https://github.com/obya/my-api-portal
+home: https://github.com/vondacho/api-hub
 sources:
-  - https://github.com/obya/my-api-portal/tree/main/api-registry
+  - https://github.com/vondacho/api-hub/tree/main/api-registry
 maintainers:
   - name: Olivier von Dach

@@ -32,7 +32,7 @@ helm.sh/chart: {{ include "api-scorer.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/part-of: my-api-scorer
+app.kubernetes.io/part-of: api-hub
 {{- end }}
 
 {{- define "api-scorer.selectorLabels" -}}

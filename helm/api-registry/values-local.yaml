@@ -2,7 +2,7 @@
 # (Rancher Desktop / Docker Desktop).
 #
 #   helm upgrade --install api-registry helm/api-registry \
-#     -n my-api-portal --create-namespace \
+#     -n api-hub --create-namespace \
 #     -f helm/api-registry/values-local.yaml
 #
 # Install helm/api-registry-db first — Strapi migrates its schema on boot and

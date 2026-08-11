@@ -3,7 +3,7 @@
 #
 #   cd api-scorer && docker build -t api-scorer:dev .
 #   helm upgrade --install api-scorer helm/api-scorer \
-#     -n my-api-portal --create-namespace \
+#     -n api-hub --create-namespace \
 #     -f helm/api-scorer/values-local.yaml
 
 image:

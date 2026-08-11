@@ -32,7 +32,7 @@ helm.sh/chart: {{ include "api-registry.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-app.kubernetes.io/part-of: my-api-portal
+app.kubernetes.io/part-of: api-hub
 app.kubernetes.io/component: cms
 {{- end }}
 

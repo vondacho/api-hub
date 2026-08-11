@@ -54,7 +54,7 @@ Via its own chart — see `helm/api-registry-db/` and `helm/README.md`.
 
 ```bash
 helm upgrade --install api-registry-db helm/api-registry-db \
-  -n my-api-portal --create-namespace -f helm/api-registry-db/values-local.yaml
+  -n api-hub --create-namespace -f helm/api-registry-db/values-local.yaml
 ```
 
 The chart generates the password on first install and keeps it across upgrades.
