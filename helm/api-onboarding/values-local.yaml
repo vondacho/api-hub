@@ -28,6 +28,20 @@ app:
       level:
         io.obya.api.onboarding: DEBUG
 
+# Rancher Desktop runs Traefik as the default IngressClass. This is a local
+# convenience only: api-portal is server-rendered precisely so the browser never
+# has to reach onboarding, so nothing in the product needs this route. It saves a
+# port-forward when poking at the API by hand — do not carry it into a real
+# cluster, where onboarding should stay ClusterIP.
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: api-onboarding.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
 resources:
   requests:
     cpu: 100m
