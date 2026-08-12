@@ -1,0 +1,188 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SiteFooter from '../../components/home/SiteFooter.astro';
+
+/*
+ * The Academy is a teaser: the curriculum below is defined, the lessons are not
+ * written. Every track therefore carries a `reading` link to documentation that
+ * exists today, so the page is useful before a single lesson ships instead of
+ * being a dead end with a mailing-list box on it.
+ *
+ * Deliberately no enrolment form and no launch date — there is no backend to
+ * take a registration and no date anyone has committed to. Add the form when
+ * something can receive it.
+ *
+ * The four tracks mirror the platform's own vocabulary rather than inventing a
+ * parallel one: the scoring dimensions (FC/SEC/DX/MR) are the ones documented in
+ * /doc/design-guidelines/, and the formats are the four the onboarding service
+ * actually parses. Keep them in step — a course that teaches a dimension nothing
+ * measures is worse than no course.
+ */
+const tracks = [
+	{
+		title: 'Contract-first foundations',
+		level: 'Foundation',
+		summary:
+			'Start from the document, not the code. What a contract is for, and what the platform does with it the moment you hand one over.',
+		lessons: [
+			'Why the contract comes before the implementation',
+			'Anatomy of an OpenAPI document',
+			'Your first onboarding: parse, validate, score, register',
+			'Reading a scorecard without taking it personally',
+		],
+		reading: { label: 'Onboarding', href: '/doc/onboarding/' },
+	},
+	{
+		title: 'Designing for the score',
+		level: 'Core',
+		summary:
+			'One track per scoring dimension. What each one asks of a design, why it asks it, and how to fix a contract that grades badly.',
+		lessons: [
+			'Foundational Compliance — what breaks generators downstream',
+			'Security — declaring the trust posture you actually meant',
+			'Developer Experience — writing for whoever reads it next',
+			'Mock Readiness — examples good enough to serve',
+		],
+		reading: { label: 'Design guidelines', href: '/doc/design-guidelines/' },
+	},
+	{
+		title: 'Beyond REST',
+		level: 'Core',
+		summary:
+			'The platform takes four contract formats. This track covers the three that are not OpenAPI, and when each is the honest choice.',
+		lessons: [
+			'Event-driven contracts with AsyncAPI',
+			'Graph APIs and GraphQL SDL',
+			'Describing a legacy estate with WSDL',
+			'Choosing a format, and living with the choice',
+		],
+		reading: { label: 'Catalog', href: '/doc/catalog/' },
+	},
+	{
+		title: 'Consuming the catalog',
+		level: 'Applied',
+		summary:
+			'The other half of the lifecycle: finding an API somebody else registered and building against it without a meeting.',
+		lessons: [
+			'Searching the catalog and reading a contract',
+			'Generating a client you can trust',
+			'Standing up a mock from the specification',
+			'Exposing catalogued APIs to agents over MCP',
+		],
+		reading: { label: 'Integration', href: '/doc/usage/integration/' },
+	},
+] as const;
+---
+
+<Layout
+	title="Academy — API Hub"
+	description="Guided learning paths that turn the API Hub design guidelines into practice — contract-first foundations, the scoring dimensions, every contract format, and consuming the catalog."
+>
+	<main id="main" class="mx-auto w-full max-w-5xl px-6 py-12">
+		<nav class="text-sm text-ink-muted dark:text-slate-400">
+			<a href="/" class="hover:text-brand hover:underline dark:hover:text-sky-400">Home</a>
+			<span aria-hidden="true"> / </span>
+			<span>Academy</span>
+		</nav>
+
+		<p class="mt-6 text-xs font-semibold tracking-[0.16em] text-brand uppercase dark:text-sky-400">
+			Learning paths
+		</p>
+		<h1 class="mt-3 text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+			The platform scores your contracts. The Academy teaches you why.
+		</h1>
+		<p class="mt-5 max-w-2xl text-base text-ink-muted sm:text-lg dark:text-slate-400">
+			Four short paths that turn the design guidelines from a page you are marked
+			against into something you can actually do. Written around the same
+			dimensions the scorer uses, so what you learn here is what the platform
+			checks there.
+		</p>
+
+		<p
+			class="mt-8 rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm dark:border-amber-700/60 dark:bg-amber-950/40"
+		>
+			<strong>In preparation.</strong>
+			<span class="mt-1 block text-ink-muted dark:text-slate-400">
+				The curriculum below is settled; the lessons are still being written, and
+				there is nothing to enrol in yet. Each track links to the documentation
+				that covers its ground today.
+			</span>
+		</p>
+
+		<h2 class="mt-14 text-2xl font-semibold tracking-tight">The curriculum</h2>
+
+		<ul class="mt-6 grid gap-6 md:grid-cols-2">
+			{
+				tracks.map(({ title, level, summary, lessons, reading }) => (
+					<li class="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-700 dark:bg-night-raised">
+						<span class="flex items-center justify-between gap-3">
+							<span class="text-xs font-semibold tracking-[0.14em] text-brand uppercase dark:text-sky-400">
+								{level}
+							</span>
+							<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tracking-wide text-ink-muted uppercase dark:bg-slate-700 dark:text-slate-300">
+								Coming soon
+							</span>
+						</span>
+
+						<h3 class="mt-4 text-xl font-semibold">{title}</h3>
+						<p class="mt-2 text-ink-muted dark:text-slate-400">{summary}</p>
+
+						<ul class="mt-5 grow space-y-2 text-sm text-ink-muted dark:text-slate-400">
+							{lessons.map((lesson) => (
+								<li class="flex gap-3">
+									<span aria-hidden="true" class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand dark:bg-sky-400" />
+									<span>{lesson}</span>
+								</li>
+							))}
+						</ul>
+
+						<p class="mt-6 border-t border-slate-200 pt-4 text-sm dark:border-slate-700">
+							<span class="text-ink-muted dark:text-slate-400">Read today: </span>
+							<a
+								href={reading.href}
+								class="font-semibold text-brand underline-offset-4 hover:underline dark:text-sky-400"
+							>
+								{reading.label}
+							</a>
+						</p>
+					</li>
+				))
+			}
+		</ul>
+
+		<section
+			aria-labelledby="start-now"
+			class="mt-14 rounded-2xl border border-slate-200 bg-slate-50 p-8 dark:border-slate-700 dark:bg-night-raised"
+		>
+			<h2 id="start-now" class="text-2xl font-semibold tracking-tight">
+				You do not have to wait
+			</h2>
+			<p class="mt-2 max-w-2xl text-ink-muted dark:text-slate-400">
+				Everything the first lessons will teach is already documented, and the
+				fastest way to learn the scoring is to onboard a contract and read what
+				comes back.
+			</p>
+			<div class="mt-6 flex flex-wrap gap-3">
+				<a
+					href="/doc/onboarding/"
+					class="rounded-full bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-strong focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-brand"
+				>
+					Onboard a contract
+				</a>
+				<a
+					href="/doc/design-guidelines/"
+					class="rounded-full border border-slate-300 px-6 py-3 font-semibold transition hover:bg-white dark:border-slate-600 dark:hover:bg-night"
+				>
+					Read the design guidelines
+				</a>
+				<a
+					href="/catalog"
+					class="rounded-full border border-slate-300 px-6 py-3 font-semibold transition hover:bg-white dark:border-slate-600 dark:hover:bg-night"
+				>
+					Browse the catalog
+				</a>
+			</div>
+		</section>
+	</main>
+	<SiteFooter />
+</Layout>

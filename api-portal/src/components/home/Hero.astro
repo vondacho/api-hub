@@ -1,5 +1,19 @@
 ---
 import heroBackground from '../../assets/hero-background.svg';
+
+/*
+ * The platform's ten features, in the order the root README enumerates them.
+ * Split by what is actually deployable today: onboarding, registry, catalog,
+ * scoring and documentation have modules behind them; the other five are the
+ * target topology the README describes and have no service yet.
+ *
+ * The split is the point — the banner is allowed to describe the whole
+ * lifecycle, but it must not let a visitor believe they can mock a contract or
+ * wrap it for an agent today. Move a feature up when its module ships, and keep
+ * the wording in step with the panels in SectionPanels.astro.
+ */
+const available = ['Onboarding', 'Registry', 'Catalog', 'Scoring', 'Documentation'] as const;
+const planned = ['Monitoring', 'Discovery', 'Mocking', 'MCP wrapping', 'MCP registry'] as const;
 ---
 
 <section class="relative isolate flex min-h-[min(70vh,620px)] items-center overflow-hidden px-6 py-20 text-slate-100 sm:py-28">
@@ -37,9 +51,12 @@ import heroBackground from '../../assets/hero-background.svg';
 			Every API, under contract.
 		</h1>
 		<p class="mt-5 max-w-2xl text-base text-slate-300 sm:text-lg">
-			API Hub parses, validates, scores and registers your API contracts — OpenAPI,
-			AsyncAPI, GraphQL and WSDL — so a specification stops being a document
-			someone wrote once and becomes the thing the platform actually enforces.
+			API Hub runs the whole life of an API contract — from the commit that changes a
+			specification to the agent that calls the API it describes. Contracts in OpenAPI,
+			AsyncAPI, GraphQL and WSDL are discovered, parsed, validated, scored against your
+			design guidelines and registered revision by revision — then made useful:
+			searchable in a catalog, documented, mocked on demand, monitored across
+			deployments, and wrapped as tools an agent can call.
 		</p>
 		<div class="mt-8 flex flex-wrap gap-3">
 			<a
@@ -54,6 +71,43 @@ import heroBackground from '../../assets/hero-background.svg';
 			>
 				Onboard a contract
 			</a>
+		</div>
+
+		<!--
+			Two lists rather than one styled two ways: "planned" has to survive being
+			read out by a screen reader or seen without colour, so the grouping carries
+			the meaning and the dimmer pills only reinforce it.
+		-->
+		<div class="mt-10 flex flex-col gap-3 border-t border-white/15 pt-6">
+			<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+				<span id="hero-available" class="text-xs font-semibold tracking-[0.14em] text-sky-300 uppercase">
+					Available
+				</span>
+				<ul aria-labelledby="hero-available" class="flex flex-wrap gap-2">
+					{
+						available.map((feature) => (
+							<li class="rounded-full bg-white/12 px-3 py-1 text-sm font-medium text-slate-100">
+								{feature}
+							</li>
+						))
+					}
+				</ul>
+			</div>
+
+			<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+				<span id="hero-planned" class="text-xs font-semibold tracking-[0.14em] text-slate-300 uppercase">
+					Planned
+				</span>
+				<ul aria-labelledby="hero-planned" class="flex flex-wrap gap-2">
+					{
+						planned.map((feature) => (
+							<li class="rounded-full border border-white/25 px-3 py-1 text-sm font-medium text-slate-300">
+								{feature}
+							</li>
+						))
+					}
+				</ul>
+			</div>
 		</div>
 	</div>
 </section>
