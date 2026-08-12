@@ -18,11 +18,14 @@ WORKDIR /app
 
 # Install against the lockfile alone first, so this layer stays cached until a
 # dependency actually changes.
-COPY package.json package-lock.json ./
+# .npmrc rides along: it carries legacy-peer-deps, without which `npm ci` refuses
+# the @scalar/astro ↔ Astro 7 peer range. See the file for why.
+COPY package.json package-lock.json .npmrc ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
 COPY astro.config.mjs tsconfig.json ./
 COPY public ./public
+COPY scripts ./scripts
 COPY src ./src
 RUN npm run build
 

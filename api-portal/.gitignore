@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# vendored Scalar bundle, re-copied by prebuild/predev
+public/scalar/

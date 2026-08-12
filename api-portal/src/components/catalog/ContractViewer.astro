@@ -2,15 +2,28 @@
 /*
  * Renders a registered contract.
  *
- * OpenAPI goes to Scalar's reference UI. Everything else — AsyncAPI, GraphQL
- * SDL, WSDL — is shown as its source, because there is no reference renderer for
- * them here and a blank panel would be worse than the document itself.
+ * OpenAPI goes to Scalar's reference UI, through the official <ScalarComponent>
+ * integration. Everything else — AsyncAPI, GraphQL SDL, WSDL — is shown as its
+ * source, because there is no reference renderer for them here and a blank panel
+ * would be worse than the document itself.
  *
- * The source is handed over inside a <script type="application/json"> rather
- * than interpolated into JavaScript: the body is arbitrary user-submitted text,
- * and this is the one place it crosses into the client. Astro escapes `<` in
- * JSON script blocks, so the document cannot break out of the tag.
+ * `renderMode="client"` rather than the default `"static"`: static mode renders a
+ * complete HTML document (<head>, <title> and all) and injects it inline, which
+ * would nest a second document inside the page Layout already owns. Client mode
+ * emits an empty container and mounts into it, which is what a component embedded
+ * in an existing page wants.
+ *
+ * The contract is passed as `content`, not `url`: the registry stores the source
+ * as text and there is no address to fetch it from. Scalar detects YAML or JSON
+ * itself, so the stored source goes over untouched — no reserialising, and no
+ * guessing at the original format. The value crosses into the client inside a
+ * data attribute that Astro escapes, so an arbitrary user-submitted body cannot
+ * break out of the tag.
+ *
+ * `darkMode` is deliberately unset. Scalar falls back to prefers-color-scheme
+ * when it is absent, which is exactly how the rest of the portal picks its theme.
  */
+import { ScalarComponent } from '@scalar/astro';
 import { isOpenApi, type Specification } from '../../lib/registry';
 
 interface Props {
@@ -22,13 +35,31 @@ const { specification: spec } = Astro.props;
 /* `body` is `unknown` in the contract; the registry stores the source as text. */
 const source = typeof spec.body === 'string' ? spec.body : JSON.stringify(spec.body, null, 2);
 const renderable = isOpenApi(spec.contract);
+
+/*
+ * Served from the portal's own origin by scripts/copy-scalar-bundle.mjs. Leaving
+ * this unset would fall back to jsDelivr and put a public-internet dependency in
+ * front of a cluster-internal page.
+ */
+const SCALAR_BUNDLE = '/scalar/standalone.js';
 ---
 
 {
 	renderable ? (
 		<>
-			<script id="contract-source" type="application/json" set:html={JSON.stringify(source)} />
-			<div id="contract-reference" class="scalar-host" />
+			<div class="scalar-host">
+				<ScalarComponent
+					renderMode="client"
+					configuration={{
+						content: source,
+						cdn: SCALAR_BUNDLE,
+						hideClientButton: true,
+						showDeveloperTools: 'never',
+						mcp: { disabled: true },
+						agent: { disabled: true },
+					}}
+				/>
+			</div>
 			<noscript>
 				<p class="mb-3 text-sm text-ink-muted dark:text-slate-400">
 					The reference view needs JavaScript. The contract source follows.
@@ -45,25 +76,6 @@ const renderable = isOpenApi(spec.contract);
 		</>
 	)
 }
-
-<script>
-	import { createApiReference } from '@scalar/api-reference';
-
-	const holder = document.getElementById('contract-source');
-	const mount = document.getElementById('contract-reference');
-
-	if (holder?.textContent && mount) {
-		// Scalar accepts the document as a string and detects YAML or JSON itself,
-		// so the stored source is passed through untouched — no reserialising, and
-		// no guessing at the original format.
-		createApiReference(mount, {
-			content: JSON.parse(holder.textContent) as string,
-			// The portal follows the OS theme and Scalar does not, so it is told.
-			darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-			hideClientButton: true,
-		});
-	}
-</script>
 
 <style is:global>
 	/* Scalar ships its own scrolling shell; keep it inside the page instead. */

@@ -73,7 +73,20 @@ toolchain — the contract-first client generation at `generate-sources` still
 runs normally.
 
 The `api-portal` build runs `npm ci && npm run build` on `node:22-alpine`, then
-ships only the production `node_modules` plus `dist/`.
+ships only the production `node_modules` plus `dist/`. Two of its inputs are
+easy to drop from the Dockerfile by accident:
+
+- **`.npmrc` is copied alongside `package.json`.** It carries
+  `legacy-peer-deps`, without which `npm ci` refuses to resolve
+  `@scalar/astro` (it peers on Astro 4/5; the portal is on Astro 7). Omit the
+  file and the image build dies at `ERESOLVE`, even though a local
+  `node_modules` built earlier works fine.
+- **`scripts/` is copied too.** `prebuild` runs
+  `scripts/copy-scalar-bundle.mjs`, which vendors Scalar's standalone bundle
+  into `public/scalar/` so the contract viewer loads it from the portal's own
+  origin instead of jsDelivr. The bundle is git-ignored and regenerated on
+  every build; without the script the viewer silently falls back to the public
+  CDN, which is unreachable from a closed cluster.
 
 The `api-registry` build follows
 [Strapi's containerisation guide](https://docs.strapi.io/cms/installation/docker),
@@ -162,6 +175,71 @@ through the CMS, or with a shell:
 ```bash
 kubectl -n api-hub exec -it statefulset/api-registry-db -- psql -U strapi -d strapi
 ```
+
+## 4. Redeploy a component
+
+Shipping a code change to a running cluster takes **three** steps, not two.
+Rebuilding the image and running `helm upgrade` is not enough on its own:
+
+```bash
+# 1. rebuild into the store the kubelet reads (see step 1 for the containerd variant)
+cd api-portal && docker build -t api-portal:dev .
+
+# 2. reconcile the release
+helm upgrade --install api-portal helm/api-portal \
+  -n api-hub -f helm/api-portal/values-local.yaml
+
+# 3. force the pods onto the new image
+kubectl rollout restart deployment/api-portal -n api-hub
+kubectl rollout status  deployment/api-portal -n api-hub --timeout=300s
+```
+
+**Why step 3 is not optional.** Every `values-local.yaml` pins `tag: dev` with
+`pullPolicy: Never`. Rebuilding produces a new image under the *same* tag, so
+the rendered Deployment is byte-identical to the one already applied —
+Kubernetes sees no change, creates no ReplicaSet, and leaves the old pods
+running. `helm upgrade` reports `STATUS: deployed` and bumps the revision, which
+makes it look like the deploy worked. The `checksum/config` annotation on the
+pod templates only covers *ConfigMap* changes; it does nothing for an image
+rebuilt under a fixed tag. Skip the restart and you get a new Helm revision
+serving the old code.
+
+`api-registry-db` is a StatefulSet, so use `statefulset/api-registry-db` in
+place of `deployment/...`. It is also the one component not to restart out of
+habit — bouncing it takes the database down and crash-loops the CMS until it is
+back.
+
+Confirm the pod actually picked the image up, rather than trusting the rollout:
+
+```bash
+kubectl get pods -n api-hub -l app.kubernetes.io/name=api-portal \
+  -o custom-columns='NAME:.metadata.name,DELETING:.metadata.deletionTimestamp,IMAGEID:.status.containerStatuses[0].imageID'
+docker inspect api-portal:dev --format '{{.Id}}'
+```
+
+The digest of the row with no `DELETING` timestamp must match the local image.
+Print that column rather than filtering it away: **a terminating pod still
+reports `status.phase: Running`**, so `--field-selector status.phase=Running`
+does not exclude it, and for a few seconds after `rollout status` returns the
+old pod can still be `items[0]` — reading `items[0]` there reports the *old*
+digest and makes a good deploy look like a failed one.
+
+A full-stack redeploy is the same three steps per component, in the install
+order from step 2: `api-registry-db`, `api-registry`, `api-onboarding`,
+`api-portal`, `api-scorer`.
+
+### Build engine gotcha
+
+`nerdctl build` fails with `no buildkit host is available ... failed to ping to
+host unix:///run/buildkit/buildkitd.sock` when Rancher Desktop is configured for
+**moby** rather than containerd — there is no buildkitd to talk to. Check which
+engine is active before reaching for either command:
+
+```bash
+grep -o '"name":"[a-z]*"' ~/Library/Preferences/rancher-desktop/settings.json
+```
+
+`moby` means `docker build`; `containerd` means `nerdctl --namespace k8s.io build`.
 
 ## Pointing at real dependencies
 
