@@ -67,7 +67,7 @@ public class OverlayProcessor {
         });
     }
 
-        public static String processOverlay(String openApi, String overlay) throws JsonMappingException, JsonProcessingException {
+    public static String processOverlay(String openApi, String overlay) throws JsonMappingException, JsonProcessingException {
         Overlay overlayObj = om.readValue(overlay, Overlay.class);
         JsonNode openApiObj = (JsonNode)Configuration.defaultConfiguration().jsonProvider().parse(openApi);
         for (Action action : overlayObj.actions) {
@@ -103,7 +103,7 @@ public class OverlayProcessor {
                 }
             }
         }
-        return om.writeValueAsString(openApiObj);
+        return Configuration.defaultConfiguration().jsonProvider().toJson(openApiObj);
     }
 
     private static void mergeChanges(ObjectNode orig, ObjectNode updates) {
