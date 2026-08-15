@@ -28,6 +28,7 @@
     "prebuild": "npm run generate",
     "build": "tsc -p tsconfig.json",
     "start": "node ./dist/main.js",
+    "export:rules": "tsx --conditions=development scripts/export-rules.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

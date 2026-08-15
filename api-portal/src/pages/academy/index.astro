@@ -12,6 +12,12 @@ import SiteFooter from '../../components/home/SiteFooter.astro';
  * take a registration and no date anyone has committed to. Add the form when
  * something can receive it.
  *
+ * Lessons marked `video: true` will ship with a short video told as a story —
+ * a team, a decision, what it cost. The flag is per lesson rather than per
+ * track on purpose: a track is only ready when its stories are, and marking
+ * them individually keeps that honest. The counts under "Told as stories" are
+ * derived from these flags, so they cannot drift from the list.
+ *
  * The four tracks mirror the platform's own vocabulary rather than inventing a
  * parallel one: the scoring dimensions (FC/SEC/DX/MR) are the ones documented in
  * /doc/design-guidelines/, and the formats are the four the onboarding service
@@ -25,10 +31,10 @@ const tracks = [
 		summary:
 			'Start from the document, not the code. What a contract is for, and what the platform does with it the moment you hand one over.',
 		lessons: [
-			'Why the contract comes before the implementation',
-			'Anatomy of an OpenAPI document',
-			'Your first onboarding: parse, validate, score, register',
-			'Reading a scorecard without taking it personally',
+			{ title: 'Why the contract comes before the implementation', video: true },
+			{ title: 'Anatomy of an OpenAPI document' },
+			{ title: 'Your first onboarding: parse, validate, score, register' },
+			{ title: 'Reading a scorecard without taking it personally', video: true },
 		],
 		reading: { label: 'Onboarding', href: '/doc/onboarding/' },
 	},
@@ -38,10 +44,10 @@ const tracks = [
 		summary:
 			'One track per scoring dimension. What each one asks of a design, why it asks it, and how to fix a contract that grades badly.',
 		lessons: [
-			'Foundational Compliance — what breaks generators downstream',
-			'Security — declaring the trust posture you actually meant',
-			'Developer Experience — writing for whoever reads it next',
-			'Mock Readiness — examples good enough to serve',
+			{ title: 'Foundational Compliance — what breaks generators downstream', video: true },
+			{ title: 'Security — declaring the trust posture you actually meant', video: true },
+			{ title: 'Developer Experience — writing for whoever reads it next' },
+			{ title: 'Mock Readiness — examples good enough to serve' },
 		],
 		reading: { label: 'Design guidelines', href: '/doc/design-guidelines/' },
 	},
@@ -51,10 +57,10 @@ const tracks = [
 		summary:
 			'The platform takes four contract formats. This track covers the three that are not OpenAPI, and when each is the honest choice.',
 		lessons: [
-			'Event-driven contracts with AsyncAPI',
-			'Graph APIs and GraphQL SDL',
-			'Describing a legacy estate with WSDL',
-			'Choosing a format, and living with the choice',
+			{ title: 'Event-driven contracts with AsyncAPI', video: true },
+			{ title: 'Graph APIs and GraphQL SDL' },
+			{ title: 'Describing a legacy estate with WSDL', video: true },
+			{ title: 'Choosing a format, and living with the choice', video: true },
 		],
 		reading: { label: 'Catalog', href: '/doc/catalog/' },
 	},
@@ -64,14 +70,20 @@ const tracks = [
 		summary:
 			'The other half of the lifecycle: finding an API somebody else registered and building against it without a meeting.',
 		lessons: [
-			'Searching the catalog and reading a contract',
-			'Generating a client you can trust',
-			'Standing up a mock from the specification',
-			'Exposing catalogued APIs to agents over MCP',
+			{ title: 'Searching the catalog and reading a contract' },
+			{ title: 'Generating a client you can trust', video: true },
+			{ title: 'Standing up a mock from the specification' },
+			{ title: 'Exposing catalogued APIs to agents over MCP', video: true },
 		],
 		reading: { label: 'Integration', href: '/doc/usage/integration/' },
 	},
 ] as const;
+
+const lessonCount = tracks.reduce((total, track) => total + track.lessons.length, 0);
+const videoLessonCount = tracks.reduce(
+	(total, track) => total + track.lessons.filter((lesson) => 'video' in lesson && lesson.video).length,
+	0,
+);
 ---
 
 <Layout
@@ -109,6 +121,33 @@ const tracks = [
 			</span>
 		</p>
 
+		<section
+			aria-labelledby="format"
+			class="mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-7 dark:border-slate-700 dark:bg-night-raised"
+		>
+			<h2 id="format" class="text-xl font-semibold tracking-tight">Told as stories</h2>
+			<p class="mt-2 max-w-3xl text-ink-muted dark:text-slate-400">
+				A guideline is easy to state and hard to care about. So the lessons carrying a
+				<span class="mx-1 inline-flex items-center gap-1 align-middle text-brand dark:text-sky-400">
+					<svg
+						viewBox="0 0 20 20"
+						class="inline h-4 w-4"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						aria-hidden="true"
+					>
+						<circle cx="10" cy="10" r="7.5" />
+						<path d="M8.5 7.5 13 10l-4.5 2.5V7.5Z" fill="currentColor" stroke="none" />
+					</svg>
+					<span class="font-semibold">story</span>
+				</span>
+				mark come with a short video in narrative form: a team that shipped a contract, what
+				it cost them downstream, and what the rule would have saved. {videoLessonCount} of
+				the {lessonCount} lessons are planned that way — the rest are short enough to read.
+			</p>
+		</section>
+
 		<h2 class="mt-14 text-2xl font-semibold tracking-tight">The curriculum</h2>
 
 		<ul class="mt-6 grid gap-6 md:grid-cols-2">
@@ -131,7 +170,28 @@ const tracks = [
 							{lessons.map((lesson) => (
 								<li class="flex gap-3">
 									<span aria-hidden="true" class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand dark:bg-sky-400" />
-									<span>{lesson}</span>
+									<span>
+										{lesson.title}
+										{'video' in lesson && lesson.video && (
+											<>
+												{' '}
+												<span class="inline-flex items-center gap-1 align-middle text-brand dark:text-sky-400">
+													<svg
+														viewBox="0 0 20 20"
+														class="inline h-3.5 w-3.5"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2"
+														aria-hidden="true"
+													>
+														<circle cx="10" cy="10" r="7.5" />
+														<path d="M8.5 7.5 13 10l-4.5 2.5V7.5Z" fill="currentColor" stroke="none" />
+													</svg>
+													<span class="sr-only">Includes a storytelling video</span>
+												</span>
+											</>
+										)}
+									</span>
 								</li>
 							))}
 						</ul>
