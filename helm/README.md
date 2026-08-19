@@ -381,13 +381,28 @@ database's encoding and bootstrap belong with the image rather than the release.
 - `readOnlyRootFilesystem: true` is on for both. Strapi additionally gets an
   `emptyDir` at `/home/app` — the CLI creates a config store under `$HOME` while
   loading its commands and logs `Failed to load command` if it cannot.
-- The uploads PVC is `ReadWriteOnce`, so the CMS Deployment uses the `Recreate`
-  strategy; a rolling update would deadlock waiting for the old pod to release
-  the volume.
-- Both the uploads PVC and the two Secrets carry
-  `helm.sh/resource-policy: keep`. Uploaded media is referenced by rows in the
-  database, and `ENCRYPTION_KEY` decrypts them, so neither should be easier to
-  destroy than the data it belongs to.
+- **The CMS owns no volume.** Everything that has to outlive a pod is in
+  `api-registry-db`, which is the whole reason the registry is two releases: the
+  CMS is redeployed on every image change and the database is not. That turns
+  the `Recreate` strategy the old ReadWriteOnce claim forced into an ordinary
+  rolling update.
+- **`maxSurge: 0`, though.** Losing the volume does not make two Strapi pods
+  interchangeable: **Strapi migrates the schema at boot**, so a surging update
+  has two versions migrating the same database at once — which ends in
+  `duplicate key value violates unique constraint pg_type_typname_nsp_index`.
+  Draining first costs a few seconds and removes the race. Raising
+  `replicaCount` reintroduces it, so anything above 1 needs a migration story.
+- The consequence is stated rather than hidden: `/app/public/uploads` is an
+  `emptyDir`, so **media uploaded through the admin UI does not survive the
+  pod**, while the rows in the database that reference it do. The registry's
+  content is specs and text; anything dragged into the Media Library is scratch
+  space. Configure a remote upload provider in `api-registry/config/plugins.ts`
+  the day that stops being true — that keeps the release stateless, which
+  re-adding a claim would not.
+- Both Secrets carry `helm.sh/resource-policy: keep`. `ENCRYPTION_KEY` decrypts
+  columns sitting in the database, and the generated PostgreSQL password is the
+  only copy, so neither should be easier to destroy than the data it belongs
+  to.
 
 ## Notes on the api-portal chart
 
@@ -417,8 +432,7 @@ api-onboarding/                 api-portal/                  api-registry/      
     _helpers.tpl                    _helpers.tpl                 _helpers.tpl                  _helpers.tpl
     configmap.yaml                  configmap.yaml               configmap.yaml                -                    # app config
     -                               -                            secret.yaml                   secret.yaml          # generated, preserved on upgrade
-    deployment.yaml                 deployment.yaml              deployment.yaml               statefulset.yaml
-    -                               -                            pvc.yaml                      -                    # db uses a volumeClaimTemplate
+    deployment.yaml                 deployment.yaml              deployment.yaml               statefulset.yaml     # db's volumeClaimTemplate is the only storage in the repo
     service.yaml                    service.yaml                 service.yaml                  service.yaml
     serviceaccount.yaml             serviceaccount.yaml          serviceaccount.yaml           serviceaccount.yaml
     ingress.yaml                    ingress.yaml                 ingress.yaml                  -                    # on in values-local.yaml

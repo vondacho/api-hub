@@ -3,6 +3,24 @@
 
 replicaCount: 1
 
+# Update strategy, applied as-is.
+#
+# maxSurge: 0 is not the usual default, and it is not about the volume this
+# release no longer has. **Strapi migrates the database schema at boot.** With
+# maxSurge: 1 the new pod boots while the old one is still running, so two
+# Strapi versions migrate the same database at the same time — which is how a
+# deploy ends in `duplicate key value violates unique constraint
+# pg_type_typname_nsp_index`. Draining first costs a few seconds of downtime and
+# removes the race.
+#
+# Raising replicaCount reintroduces it, because old and new pods still overlap
+# during the update. Anything above 1 needs a migration story first.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 0
+    maxUnavailable: 1
+
 image:
   repository: api-registry
   # Defaults to .Chart.AppVersion when empty.
@@ -34,8 +52,9 @@ podSecurityContext:
 
 securityContext:
   allowPrivilegeEscalation: false
-  # Strapi writes only to public/uploads and /tmp at run time; both are mounted
-  # as volumes, so the image itself can stay read-only.
+  # Strapi writes to public/uploads, /tmp and $HOME at run time. All three are
+  # mounted as emptyDir volumes, so the image itself can stay read-only — and
+  # nothing that has to outlive the pod is written to any of them.
   readOnlyRootFilesystem: true
   capabilities:
     drop:
@@ -152,14 +171,21 @@ app:
   #     LOG_LEVEL: debug
   extraConfig: {}
 
-# Uploads are written to disk by the default upload provider, so they need a
-# volume to survive a restart. Disable only if a remote provider is configured.
-persistence:
-  enabled: true
-  # Empty uses the cluster's default StorageClass.
-  storageClass: ""
-  accessMode: ReadWriteOnce
-  size: 1Gi
+# ---------------------------------------------------------------------------
+# Uploads.
+#
+# There is deliberately no volume in this release. The default upload provider
+# writes to /app/public/uploads, which is mounted as an emptyDir — so **media
+# uploaded through the admin UI does not survive the pod**, while the rows in
+# api-registry-db that reference it do.
+#
+# That is the accepted cost of a stateless CMS: the registry is redeployed on
+# every image change and the database is not, and a ReadWriteOnce claim here
+# also forced a Recreate update strategy on a workload that does not need one.
+# Give the upload plugin a remote provider (S3, Cloudinary) in
+# api-registry/config/plugins.ts the day media has to last — that keeps the
+# release stateless, which re-adding a claim would not.
+# ---------------------------------------------------------------------------
 
 # Flags passed to the Node process, e.g. "--max-old-space-size=768".
 nodeOptions: ""

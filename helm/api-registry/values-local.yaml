@@ -35,11 +35,6 @@ database:
   host: api-registry-db
   existingSecret: api-registry-db
 
-persistence:
-  enabled: true
-  storageClass: local-path
-  size: 1Gi
-
 resources:
   requests:
     cpu: 100m

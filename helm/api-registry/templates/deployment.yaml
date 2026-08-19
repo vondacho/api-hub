@@ -6,12 +6,12 @@ metadata:
     {{- include "api-registry.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  {{- if .Values.persistence.enabled }}
-  # The uploads PVC is ReadWriteOnce, so two pods cannot hold it at once and a
-  # rolling update would deadlock waiting for the old one to release it.
+  # Applied as-is. The registry holds nothing of its own — the state is in
+  # api-registry-db — so a rolling update is safe and two pods overlapping is
+  # not a problem. Both talk to the same database, which is the one thing that
+  # is allowed to have a single writer.
   strategy:
-    type: Recreate
-  {{- end }}
+    {{- toYaml .Values.strategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "api-registry.selectorLabels" . | nindent 6 }}
@@ -94,9 +94,12 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            # The default upload provider writes here. Mounted from a PVC so
-            # media survives a restart; the admin panel bundle it is served
+            # The default upload provider writes here, and readOnlyRootFilesystem
+            # would otherwise stop it. The admin panel bundle it is served
             # alongside lives in /app/dist/build and is not shadowed.
+            #
+            # An emptyDir, so media does NOT survive the pod — see the note on
+            # uploads in values.yaml.
             - name: uploads
               mountPath: /app/public/uploads
             # readOnlyRootFilesystem is on, but Node still needs a writable
@@ -109,12 +112,7 @@ spec:
               mountPath: /home/app
       volumes:
         - name: uploads
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ include "api-registry.fullname" . }}-uploads
-          {{- else }}
           emptyDir: {}
-          {{- end }}
         - name: tmp
           emptyDir: {}
         - name: home
