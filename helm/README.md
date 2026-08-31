@@ -19,6 +19,17 @@ the Secret the `api-registry-db` release owns, so the credential exists in one
 place. **Install `api-registry-db` first** — Strapi migrates its schema on boot
 and crash-loops until the database answers.
 
+**These charts are the local path, not production.** They install onto a local
+cluster (Rancher Desktop, `*.localhost`) from images built on your machine. What
+runs in production is a single EC2 Docker host: see [`../iac/`](../iac/README.md)
+for the Terraform, `../iac/host/docker-compose.yml` for the runtime it deploys,
+and `.github/workflows/build-images.yml` for the pipeline that publishes the
+images to GHCR and rolls them out. The two paths share the component env-var
+names — a chart's `configmap.yaml` keys are the compose file's `environment:`
+keys, and `api-onboarding`'s mounted `application.yaml` is the same file in both
+— and they share the seven application secrets, which the chart generates
+locally and the deploy job reads from repository secrets.
+
 `api-onboarding`'s chart defaults both outbound adapters to the in-memory
 **dummy**, so it stays deployable on its own — but its `values-local.yaml` now
 wires the scorer to the deployed `api-scorer` for real. The registry still has

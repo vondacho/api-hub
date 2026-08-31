@@ -1,0 +1,67 @@
+# Caddy issues and renews the Let's Encrypt certificates itself and redirects
+# HTTP to HTTPS by default, so a site block per component is the whole
+# configuration.
+#
+# api-registry-db has no block: PostgreSQL is not an HTTP service and is
+# reachable on the compose network only.
+#
+# Each upstream is the compose service name and the port that service
+# `expose`s — never a published host port, because none of them publishes one.
+# Note api-scorer:3000: the chart maps Service port 8081 onto that container,
+# and there is no such indirection here.
+
+{
+	email {$ACME_EMAIL}
+}
+
+api-portal.obya.ch {
+	encode zstd gzip
+	reverse_proxy api-portal:4321
+}
+
+api-onboarding.obya.ch {
+	encode zstd gzip
+
+	# Actuator is exposed as `include: '*'` in application.yaml — deliberately,
+	# for probes and diagnostics inside the cluster — which also means /env,
+	# /configprops, /heapdump and /mappings answer to anyone who asks. Publish
+	# the API, not the management surface.
+	#
+	# This does not affect the container's own healthcheck: that runs against
+	# 127.0.0.1 inside the container and never passes through Caddy.
+	# handle /actuator* {
+	# 	respond 404
+	# }
+
+	# Contracts are uploaded here, and the stock 10 MB body limit is low for a
+	# bundled OpenAPI document with its dependencies resolved.
+	request_body {
+		max_size 32MB
+	}
+
+	handle {
+		reverse_proxy api-onboarding:8080
+	}
+}
+
+api-scorer.obya.ch {
+	encode zstd gzip
+
+	# Same reasoning as above: a spec is posted here to be scored.
+	request_body {
+		max_size 32MB
+	}
+
+	reverse_proxy api-scorer:3000
+}
+
+api-registry.obya.ch {
+	encode zstd gzip
+	# Strapi's admin panel uploads media and imports/exports content, so the
+	# stock 10 MB body limit is too low to be useful. Matches nothing in the
+	# chart — an ingress has its own annotation for this.
+	request_body {
+		max_size 100MB
+	}
+	reverse_proxy api-registry:1337
+}

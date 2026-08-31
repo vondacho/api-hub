@@ -1,0 +1,219 @@
+# Runtime definition for the api-hub Docker host (/opt/api-hub).
+#
+# Shipped by the `deploy` job in .github/workflows/build-images.yml, which packs
+# this directory onto the host and then runs `docker compose pull && up -d`.
+# Editing it is a git push — the instance itself never needs to be replaced.
+#
+# Two files sit next to it on the host and are *not* shipped from here:
+#   .env         ACME_EMAIL, written once by iac/user-data.sh
+#   secrets.env  the Strapi and PostgreSQL credentials, written by the deploy
+#                job from the repository secrets (see iac/deploy.sh)
+#
+# This is the same system the helm/ charts install on a local cluster, with the
+# same env vars — the ConfigMap keys in helm/<component>/templates/configmap.yaml
+# are these names. What differs is what a service name resolves to: on the
+# compose network `api-registry` is a container rather than a Service, which is
+# why REGISTRY_BASE_URL still reads http://api-registry:1337/api here.
+#
+# api-onboarding is the exception: its chart configures it with a mounted
+# application.yaml rather than env vars, so this file does the same — see
+# api-onboarding/application.yaml next to it.
+
+name: api-hub
+
+services:
+  # The only service bound to the host. Every application is reachable
+  # exclusively through it, so none of them can be hit over plain HTTP.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in /opt/api-hub/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates and ACME account keys. Losing this volume means re-issuing
+      # four certificates from scratch, which is how you meet Let's Encrypt's
+      # duplicate-certificate rate limit.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api-portal:
+        condition: service_healthy
+      api-registry:
+        condition: service_healthy
+      api-onboarding:
+        condition: service_healthy
+      api-scorer:
+        condition: service_healthy
+
+  # The Catalogue. Server-rendered, and deliberately the only component that
+  # talks to the other two: both addresses below are resolved by *this
+  # container*, not by the visitor's browser, which is what lets the registry
+  # stay unexposed even when this page is public.
+  api-portal:
+    image: ghcr.io/vondacho/api-hub/api-portal:latest
+    restart: unless-stopped
+    # No `ports`: reachable on the compose network only.
+    expose:
+      - "4321"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4321
+      NODE_ENV: production
+      ONBOARDING_BASE_URL: http://api-onboarding:8080
+      # Must end at the API root, without a trailing slash.
+      REGISTRY_BASE_URL: http://api-registry:1337/api
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:4321/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # The onboarding service: parse, validate, score, overlay, register.
+  #
+  # Configured by a mounted application.yaml, exactly as the chart does it —
+  # Spring Boot loads ./config/ ahead of the classpath, and WORKDIR is /app, so
+  # the file wins over the defaults baked into the jar while everything it does
+  # not mention still applies.
+  api-onboarding:
+    image: ghcr.io/vondacho/api-hub/api-onboarding:latest
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      # Container-aware heap sizing. The image sets the same default; it is
+      # repeated here because this is where you would change it.
+      JAVA_OPTS: "-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0"
+    volumes:
+      - ./api-onboarding/application.yaml:/app/config/application.yaml:ro
+    depends_on:
+      api-registry:
+        condition: service_healthy
+      api-scorer:
+        condition: service_healthy
+    healthcheck:
+      # The Actuator readiness group, the same endpoint the chart's
+      # readinessProbe uses. Reached on the loopback inside the container, so
+      # Caddy blocking /actuator publicly (see Caddyfile) does not affect it.
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # JVM boot. The chart budgets 30 x 5s for the same window.
+      start_period: 90s
+
+  # The scoring service. Runs Spectral in-process; the chart maps Service port
+  # 8081 onto this container's 3000, and on the compose network there is no such
+  # indirection — everything addresses 3000 directly.
+  api-scorer:
+    image: ghcr.io/vondacho/api-hub/api-scorer:latest
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      NODE_ENV: production
+      # "dummy" or "spectral". The chart defaults to dummy; production runs the
+      # real engine.
+      SCORER_ADAPTER: spectral
+      LOG_LEVEL: info
+      API_BASE_PATH: /api/v1
+      # Baked into the image at /app/rulesets — which rules run, how serious
+      # each is, and which dimension it belongs to. Retuning is a config change,
+      # never a code change.
+      SPECTRAL_EVALUATION: /app/rulesets/evaluation.yaml
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # The CMS holding the contract registry. Migrates its own schema on boot, so
+  # it waits for the database to be genuinely ready rather than merely started.
+  api-registry:
+    image: ghcr.io/vondacho/api-hub/api-registry:latest
+    restart: unless-stopped
+    expose:
+      - "1337"
+    # APP_KEYS, API_TOKEN_SALT, ADMIN_JWT_SECRET, TRANSFER_TOKEN_SALT,
+    # JWT_SECRET, ENCRYPTION_KEY and DATABASE_PASSWORD. Strapi refuses to boot
+    # without them, which is the failure to expect on a host that has never had
+    # a deploy with the repository secrets set.
+    env_file:
+      - ./secrets.env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 1337
+      NODE_ENV: production
+      # Strapi builds the admin panel's absolute URLs from this. Left unset, the
+      # panel calls back to host:port, which does not resolve from a browser.
+      URL: https://api-registry.obya.ch
+      STRAPI_TELEMETRY_DISABLED: "true"
+      STRAPI_DISABLE_UPDATE_NOTIFICATION: "true"
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: api-registry-db
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: strapi
+      DATABASE_USERNAME: strapi
+      DATABASE_SSL: "false"
+      DATABASE_POOL_MIN: "2"
+      DATABASE_POOL_MAX: "10"
+      DATABASE_CONNECTION_TIMEOUT: "60000"
+    volumes:
+      # Not in the chart, and deliberate. There, uploads are an emptyDir because
+      # a pod is cattle; here the Media Library would otherwise be emptied by
+      # every deploy, for the price of a named volume on a disk that is already
+      # paid for. Everything that matters is still in the database.
+      - registry_uploads:/app/public/uploads
+    depends_on:
+      api-registry-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:1337/_health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      # The first boot migrates the full schema against an empty database and
+      # seeds it before the server listens. The chart budgets 60 x 5s for the
+      # same window.
+      start_period: 180s
+
+  # The one piece of state in api-hub. Stock PostgreSQL plus this repo's initdb
+  # scripts — see api-registry-db/Dockerfile, which also pins PGDATA to a
+  # subdirectory of the mount and fixes encoding and collation.
+  #
+  # No Caddy block and no subdomain: it is not an HTTP service and is reachable
+  # on the compose network only.
+  api-registry-db:
+    image: ghcr.io/vondacho/api-hub/api-registry-db:latest
+    restart: unless-stopped
+    # POSTGRES_PASSWORD. The image carries no credential by design.
+    env_file:
+      - ./secrets.env
+    expose:
+      - "5432"
+    volumes:
+      - registry_db:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready rather than a TCP probe: the latter passes while the cluster
+      # is still recovering, and Strapi would connect too early and fail its
+      # migration.
+      test: ["CMD-SHELL", "pg_isready -U strapi -d strapi"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  caddy_data:
+  caddy_config:
+  # The catalogue itself. This volume is the only copy — nothing backs it up,
+  # and replacing the instance destroys it.
+  registry_db:
+  registry_uploads:

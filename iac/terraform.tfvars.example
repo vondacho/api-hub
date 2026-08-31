@@ -1,0 +1,43 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+
+# Contact address Let's Encrypt uses for expiry warnings.
+acme_email = "you@example.com"
+
+# Leave false in an account that already has a provider for
+# token.actions.githubusercontent.com — AWS allows only one per issuer URL, and
+# ba-hub already created this account's. Set it to true only in an account that
+# has none; terraform plan checks either answer against the account before
+# anything is created.
+# Check by hand with: aws iam list-open-id-connect-providers
+create_github_oidc_provider = false
+
+# Optional — these are the defaults.
+# Named profile from ~/.aws/config; omit to use the ambient credential chain.
+# aws_profile       = "api-hub"
+# aws_region        = "eu-central-1"
+# domain            = "obya.ch"
+# instance_type     = "t3.medium"
+# root_volume_size  = 30
+# github_repository = "vondacho/api-hub"
+# github_deploy_ref = "refs/heads/main"
+# Must match the `environment:` name in the workflow's deploy job.
+# github_deploy_environment = "production"
+
+# One entry per publicly reachable component. The keys are compose service
+# names and the values must match the site blocks in host/Caddyfile.
+# api-registry-db is deliberately absent — it is not an HTTP service.
+#
+# Drop api-onboarding and/or api-scorer to make them internal-only: api-portal
+# reaches both over the compose network, so it keeps working either way. Remove
+# the matching block from host/Caddyfile at the same time.
+# subdomains = {
+#   api-portal     = "api-portal"
+#   api-registry   = "api-registry"
+#   api-onboarding = "api-onboarding"
+#   api-scorer     = "api-scorer"
+# }
+
+# Break-glass only. Both default to nothing: administration goes through SSM
+# Session Manager, so the host normally has no key pair and no open port 22.
+# ssh_key_name      = "api-hub"
+# ssh_allowed_cidrs = ["203.0.113.4/32"]

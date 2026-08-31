@@ -1,0 +1,32 @@
+{
+  "name": "doc-hub",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "slides": "./scripts/build-slides.sh",
+    "slides:pdf": "./scripts/build-slides.sh pdf",
+    "slides:pptx": "./scripts/build-slides.sh pptx",
+    "slides:png": "./scripts/build-slides.sh png",
+    "slides:watch": "./scripts/build-slides.sh watch",
+    "slides:serve": "./scripts/build-slides.sh serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vondacho/doc-hub.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vondacho/doc-hub/issues"
+  },
+  "homepage": "https://github.com/vondacho/doc-hub#readme",
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.5.0"
+  }
+}
