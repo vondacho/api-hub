@@ -5,3 +5,6 @@
 !terraform.tfvars.example
 crash.log
 *.report.*
+
+# Written on the host by iac/deploy.sh from the repository secrets. Never here.
+host/secrets.env

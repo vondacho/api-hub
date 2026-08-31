@@ -35,6 +35,16 @@ management:
     web:
       exposure:
         include: '*'
+  # `endpoint`, singular. management.endpoints.* holds only the web and jmx
+  # exposure settings, so nesting `health` under it bound nothing at all — both
+  # show-details and probes were silently ignored.
+  #
+  # On Kubernetes that was invisible: Spring Boot creates the liveness and
+  # readiness health groups by itself once it detects the platform
+  # (AvailabilityProbesAutoConfiguration.ProbesCondition), so the chart's probes
+  # worked regardless. Under Docker Compose it detects no platform, the groups
+  # are never created, and /actuator/health/readiness returns 404.
+  endpoint:
     health:
       show-details: always
       probes:

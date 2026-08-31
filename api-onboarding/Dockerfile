@@ -37,6 +37,18 @@ WORKDIR /app
 RUN groupadd --gid 10001 app \
  && useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin app
 
+# The base image ships no HTTP client at all: eclipse-temurin installs wget only
+# to download the JDK and purges it in the same layer, and never installs curl.
+#
+# Kubernetes never needed one — the kubelet performs httpGet probes from
+# *outside* the container — but a Docker Compose healthcheck runs *inside* it,
+# so the container has to be able to call its own actuator endpoint. Without
+# this the healthcheck exits 127 and the container never becomes healthy.
+# See iac/host/docker-compose.yml.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build --chown=app:app /build/extracted/dependencies/ ./
 COPY --from=build --chown=app:app /build/extracted/spring-boot-loader/ ./
 COPY --from=build --chown=app:app /build/extracted/snapshot-dependencies/ ./

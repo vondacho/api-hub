@@ -29,9 +29,9 @@ api-onboarding.obya.ch {
 	#
 	# This does not affect the container's own healthcheck: that runs against
 	# 127.0.0.1 inside the container and never passes through Caddy.
-	# handle /actuator* {
-	# 	respond 404
-	# }
+	handle /actuator* {
+ 	    respond 404
+	}
 
 	# Contracts are uploaded here, and the stock 10 MB body limit is low for a
 	# bundled OpenAPI document with its dependencies resolved.

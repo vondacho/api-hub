@@ -96,10 +96,23 @@ services:
       api-scorer:
         condition: service_healthy
     healthcheck:
-      # The Actuator readiness group, the same endpoint the chart's
-      # readinessProbe uses. Reached on the loopback inside the container, so
-      # Caddy blocking /actuator publicly (see Caddyfile) does not affect it.
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/actuator/health/readiness"]
+      # curl, not wget: eclipse-temurin ships neither, so api-onboarding's
+      # Dockerfile installs curl specifically for this check — the kubelet does
+      # the chart's probing from outside the container and never needed one.
+      #
+      # -f turns a 404 or a 503 into a non-zero exit, which is the whole point:
+      # without it curl reports success on an endpoint that is not there.
+      #
+      # The readiness *group*, not /actuator/health. The strapi circuit breaker
+      # sets registerHealthIndicator, so a downstream blip drags the aggregate
+      # endpoint DOWN — and a healthcheck pointed at it would restart-loop this
+      # container over a registry hiccup. The readiness group holds
+      # readinessState alone. It is the same endpoint the chart's
+      # readinessProbe uses.
+      #
+      # Reached on the loopback inside the container, so Caddy blocking
+      # /actuator publicly (see Caddyfile) does not affect it.
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8080/actuator/health/readiness"]
       interval: 10s
       timeout: 5s
       retries: 5
