@@ -50,14 +50,14 @@ public class RegistrationService {
         this.registry = registry;
     }
 
-    public Try<State> submit(URI candidate) {
+    public Try<State> submit(String candidate) {
         final Try<State> scored = Flow.compositeProcessor(
                 receptionist,
                 parser,
                 revisor,
                 scorer,
                 scoreOverlayer
-        ).process(Try.success(new State().source(candidate)));
+        ).process(Try.success(CandidateSource.toState(candidate)));
 
         if (scored.map(st -> st.status() != SCORED).getValue().orElse(true)) {
             return scored;

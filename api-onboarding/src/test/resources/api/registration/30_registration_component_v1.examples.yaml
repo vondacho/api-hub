@@ -1,0 +1,58 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIExamples
+metadata:
+  name: API Onboarding - Registration
+  version: v1
+operations:
+  PUT /registrations/{id}/component:
+    valid-component:
+      request:
+        headers:
+          Content-Type: application/json
+        parameters:
+          id: 123
+        body: "{\"name\":\"my-component\",\"revision\":\"1.0.0\"}"
+      response:
+        status: 204
+    invalid-specification-not-found:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        parameters:
+          id: not-found
+        body: "{\"name\":\"my-component\",\"revision\":\"1.0.0\"}"
+      response:
+        status: 422
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/validation-error\"\
+          ,\"status\":422,\"title\":\"Validation Error\",\"detail\":\"The request\
+          \ is invalid.\"}"
+    invalid-component-missing-revision:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        parameters:
+          id: missing-revision
+        body: "{\"name\":\"my-component\"}"
+      response:
+        status: 400
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/invalid-body-property-value\"\
+          ,\"status\":400,\"title\":\"Invalid Body Property Value\",\"detail\":\"\
+          The request body contains an invalid body property value.\"}"
+    invalid-component-malformed-revision:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        parameters:
+          id: malformed-revision
+        body: "{\"name\":\"my-component\",\"revision\":\"1.0.0-invalid\"}"
+      response:
+        status: 400
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/invalid-body-property-value\"\
+          ,\"status\":400,\"title\":\"Invalid Body Property Value\",\"detail\":\"\
+          The request body contains an invalid body property value.\"}"

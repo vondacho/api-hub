@@ -16,6 +16,7 @@ import java.net.URI;
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Candidates.bundleName;
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Candidates.name;
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Candidates.productName;
+import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.Inline.validOasCandidate;
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.Oas.*;
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.unreadableSource;
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.unsupportedSchemeSource;
@@ -116,6 +117,29 @@ class OASParserTest {
             assertNotNull(body);
             assertTrue(body.contains("Petstore API"),
                     () -> "the body should carry the resolved document but was: " + body);
+        }
+    }
+
+    @Nested
+    class PopulatesTheStateFromInlineContent {
+
+        private State parsedInline() {
+            return parsed(parser().process(Try.success(new State().content(validOasCandidate.get()))));
+        }
+
+        @Test
+        void liftsTheInfoBlockOfTheDocument() {
+            assertEquals("Petstore API", parsedInline().info().title());
+        }
+
+        @Test
+        void liftsTheOnboardingExtensionsIntoTheMetadata() {
+            assertEquals(name, parsedInline().metadata().name());
+        }
+
+        @Test
+        void writesTheResolvedDocumentIntoTheBody() {
+            assertTrue(parsedInline().body().get().contains("Petstore API"));
         }
     }
 

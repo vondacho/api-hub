@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.Inline.unrecognisedContent;
+import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.Inline.validAasCandidate;
+import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.Inline.validOasCandidate;
 import static io.obya.api.onboarding.domain.model.Violation.Code.MISSING_DATA;
 import static io.obya.api.onboarding.domain.model.Violation.Code.PROCESSING_FAILED;
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,6 +98,35 @@ class ReceptionistTest {
 
             assertEquals(UsecaseExamples.Sources.Oas.validCandidate.get(),
                     result.getValue().orElseThrow().source());
+        }
+    }
+
+    @Nested
+    class IdentifiesTheContractOfInlineContent {
+
+        @Test
+        void attachesOpenApiContractWithoutReadingAnySource() throws IOException {
+            URIReader reader = mock(URIReader.class);
+
+            Try<State> result = receive(reader, new State().content(validOasCandidate.get()));
+
+            assertTrue(result.isSuccess(), () -> "expected a success but was: " + result);
+            assertEquals(Contract.Version.OPENAPI_V30, result.getValue().orElseThrow().contract().version());
+            verify(reader, never()).firstLineOnly(any());
+        }
+
+        @Test
+        void attachesAsyncApiContract() {
+            Try<State> result = receive(mock(URIReader.class), new State().content(validAasCandidate.get()));
+
+            assertEquals(Contract.Version.ASYNCAPI_V30, result.getValue().orElseThrow().contract().version());
+        }
+
+        @Test
+        void reportsProcessingFailedWhenContentMatchesNoKnownContractType() {
+            Try<State> result = receive(mock(URIReader.class), new State().content(unrecognisedContent.get()));
+
+            assertEquals(PROCESSING_FAILED, onlyFailure(result).code);
         }
     }
 

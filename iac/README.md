@@ -172,7 +172,6 @@ Verify before applying: `aws sts get-caller-identity --profile api-hub`.
 | SSH private key | nowhere — the host has no key pair by default | Replaced by SSM Session Manager, authenticated by your AWS identity. |
 | Let's Encrypt account key | the `caddy_data` volume on the host | Generated there, never leaves. |
 | GHCR pull credential | none — the packages are public | See step 1 below. |
-| DigitalOcean API token | none — the records are created by hand | Terraform never talks to DigitalOcean. |
 
 Two things must stay out of git, and `.gitignore` already covers both:
 `terraform.tfvars` and `terraform.tfstate` (the full resource inventory).

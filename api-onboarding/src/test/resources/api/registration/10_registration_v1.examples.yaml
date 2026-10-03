@@ -1,0 +1,131 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIExamples
+metadata:
+  name: API Onboarding - Registration
+  version: v1
+operations:
+  POST /registrations:
+    rejected-candidate:
+      request:
+        headers:
+          Content-Type: application/json
+          Accept: application/problem+json
+        body: "{\"source\":\"file:///oas/rejected_candidate.openapi.yaml\"}"
+      response:
+        status: 422
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/validation-error\"\
+          ,\"status\":422,\"title\":\"Validation Error\",\"detail\":\"The request\
+          \ is invalid.\"}"
+    invalid-candidate-missing-uri:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        body: "{\"source\":\"\"}"
+      response:
+        status: 400
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/validation-error\"\
+          ,\"status\":400,\"title\":\"Validation Error\",\"detail\":\"The request\
+          \ is invalid.\"}"
+    inline-candidate:
+      request:
+        headers:
+          Content-Type: application/json
+          Accept: application/json
+        body: "{\"source\":\"openapi: 3.0.3\\ninfo:\\n  title: petstore\\n  description:\
+          \ A sample API for end-to-end test fixtures.\\n  version: v1\\npaths: {}\\\
+          n\"}"
+      response:
+        status: 201
+        mediaType: application/json
+        body: "{\"id\":\"123\",\"contract\":\"OPENAPI_V30\",\"info\":{\"title\":\"\
+          petstore\",\"description\":\"A sample API for end-to-end test fixtures.\"\
+          ,\"version\":\"v1\"},\"metadata\":{\"name\":\"petstore\",\"revision\":\"\
+          1.0.0\",\"bundleName\":\"petstore\",\"productName\":\"platform\"},\"status\"\
+          :\"REGISTERED\",\"scorecard\":{\"score\":74,\"grade\":\"A-\"}}"
+    invalid-candidate-not-found-uri:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        body: "{\"source\":\"file:///not_found.openapi.yaml\"}"
+      response:
+        status: 422
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/validation-error\"\
+          ,\"status\":422,\"title\":\"Validation Error\",\"detail\":\"The request\
+          \ is invalid.\"}"
+    scored-candidate:
+      request:
+        headers:
+          Content-Type: application/json
+          Accept: application/json
+        body: "{\"source\":\"file:///oas/valid_candidate.openapi.yaml\"}"
+      response:
+        status: 200
+        mediaType: application/json
+        body: "{\"source\":\"file:///scored_candidate.openapi.yaml\",\"contract\"\
+          :\"OPENAPI_V31\",\"info\":{\"title\":\"petstore\",\"description\":\"A sample\
+          \ API for end-to-end test fixtures.\",\"version\":\"v1\"},\"metadata\":{\"\
+          name\":\"petstore\",\"revision\":\"1.0.0\",\"bundleName\":\"petstore\",\"\
+          productName\":\"platform\"},\"status\":\"SCORED\",\"scorecard\":{\"score\"\
+          :74,\"grade\":\"A-\",\"dimensions\":[{\"name\":\"FC\",\"intent\":\"Base\
+          \ layer of spec validity and structural soundness\",\"score\":99,\"grade\"\
+          :\"A+\"},{\"name\":\"SEC\",\"intent\":\"Trust, risk posture, and security\
+          \ compliance\",\"score\":100,\"grade\":\"A+\"},{\"name\":\"DX\",\"intent\"\
+          :\"Clarity, completeness, and ingestion readiness for developers and tooling\"\
+          ,\"score\":66,\"grade\":\"B\"},{\"name\":\"MR\",\"intent\":\"Ease of creating\
+          \ mock servers\",\"score\":85,\"grade\":\"A+\"}]}}"
+    registered-candidate:
+      request:
+        headers:
+          Content-Type: application/json
+          Accept: application/json
+        body: "{\"source\":\"file:///oas/registered_candidate.openapi.yaml\"}"
+      response:
+        status: 201
+        mediaType: application/json
+        body: "{\"id\":\"123\",\"source\":\"file:///registered_candidate.openapi.yaml\"\
+          ,\"contract\":\"OPENAPI_V31\",\"info\":{\"title\":\"petstore\",\"description\"\
+          :\"A sample API for end-to-end test fixtures.\",\"version\":\"v1\"},\"metadata\"\
+          :{\"name\":\"petstore\",\"revision\":\"1.0.0\",\"bundleName\":\"petstore\"\
+          ,\"productName\":\"platform\"},\"status\":\"REGISTERED\",\"scorecard\":{\"\
+          score\":74,\"grade\":\"A-\",\"dimensions\":[{\"name\":\"FC\",\"intent\"\
+          :\"Base layer of spec validity and structural soundness\",\"score\":99,\"\
+          grade\":\"A+\"},{\"name\":\"SEC\",\"intent\":\"Trust, risk posture, and\
+          \ security compliance.\",\"score\":100,\"grade\":\"A+\"},{\"name\":\"DX\"\
+          ,\"intent\":\"Clarity, completeness, and ingestion readiness for developers\
+          \ and tooling\",\"score\":66,\"grade\":\"B\"},{\"name\":\"ARAX\",\"intent\"\
+          :\"Semantic breadth, depth, and agent comprehension for AI systems.\",\"\
+          score\":51,\"grade\":\"C-\"},{\"name\":\"AU\",\"intent\":\"Functional utility,\
+          \ complexity comfort, and AI orchestration readiness.\",\"score\":93,\"\
+          grade\":\"A+\"},{\"name\":\"AID\",\"intent\":\"Findability, semantic richness,\
+          \ and reasoning readiness.\",\"score\":100,\"grade\":\"A+\"}]}}"
+    valid-candidate:
+      request:
+        headers:
+          Accept: application/json
+          Content-Type: application/json
+        body: "{\"source\":\"file:///oas/valid_candidate.openapi.yaml\"}"
+      response:
+        status: 200
+        mediaType: application/json
+        body: "{\"source\":\"file:///valid_candidate.openapi.yaml\",\"contract\":\"\
+          OPENAPI_V31\",\"info\":{\"title\":\"petstore\",\"description\":\"A sample\
+          \ API for end-to-end test fixtures.\",\"version\":\"v1\"},\"metadata\":{\"\
+          name\":\"petstore\",\"revision\":\"1.0.0\",\"bundleName\":\"petstore\",\"\
+          productName\":\"platform\"},\"status\":\"VALID\"}"
+    invalid-candidate-unrecognised-content:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        body: "{\"source\":\"this is not a specification\"}"
+      response:
+        status: 422
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/validation-error\"\
+          ,\"status\":422,\"title\":\"Validation Error\",\"detail\":\"The request\
+          \ is invalid.\"}"

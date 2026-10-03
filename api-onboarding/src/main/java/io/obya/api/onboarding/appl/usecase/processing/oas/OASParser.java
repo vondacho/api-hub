@@ -1,5 +1,6 @@
 package io.obya.api.onboarding.appl.usecase.processing.oas;
 
+import io.obya.api.onboarding.appl.usecase.processing.CandidateSource;
 import io.obya.api.onboarding.appl.usecase.processing.Processor;
 import io.obya.api.onboarding.appl.usecase.processing.reader.URIReader;
 import io.obya.api.onboarding.appl.usecase.workflow.State;
@@ -13,11 +14,9 @@ import io.openapiprocessor.jsonschema.schema.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
 
 import static io.obya.api.onboarding.domain.model.Violation.Code.*;
 import static io.obya.api.onboarding.appl.usecase.processing.Validator.*;
-import static io.obya.api.onboarding.appl.usecase.processing.reader.URIReader.readerFor;
 import static io.obya.api.onboarding.domain.model.Metadata.*;
 import static java.util.Optional.ofNullable;
 
@@ -32,10 +31,10 @@ abstract class OASParser<M> implements Processor<State> {
     @Override
     public Try<State> process(Try<State> state) {
         return state
-            .filter(st -> nonNull(st::source), MISSING_DATA.failure( "state.source"), true)
+            .filter(CandidateSource::isPresent, MISSING_DATA.failure( "state.source"), true)
             .flatMap(st -> {
                 try {
-                    final ParsingResult<M> parsing = parse(st.source());
+                    final ParsingResult<M> parsing = parse(st);
                     return Try.success(st)
                         .flatMap(s -> setModel(s, parsing.model))
                         .flatMap(s -> setInfo(s, parsing.model))
@@ -43,20 +42,20 @@ abstract class OASParser<M> implements Processor<State> {
                         .flatMap(s -> setBody(s, parsing.result));
 
                 } catch (IllegalArgumentException | IOException e) {
-                    return Try.failure(PROCESSING_FAILED.failure(st.source(), e).get());
+                    return Try.failure(PROCESSING_FAILED.failure(CandidateSource.label(st), e).get());
                 } catch (ParserException e) {
-                    return Try.failure(PROCESSING_FAILED.failure(st.source(), e.getCause().getCause()).get());
+                    return Try.failure(PROCESSING_FAILED.failure(CandidateSource.label(st), e.getCause().getCause()).get());
                 }
             });
     }
 
     record ParsingResult<M>(M model, OpenApiResult result) {}
 
-    ParsingResult<M> parse(URI source) throws IllegalArgumentException, IOException, ParserException {
-        final String content = readerFor(source, readers).allInOne(source);
+    ParsingResult<M> parse(State state) throws IllegalArgumentException, IOException, ParserException {
+        final String content = CandidateSource.read(state, readers);
         final DocumentLoader loader = new DocumentLoader(new StringReader(content), new JacksonConverter());
         final DocumentStore documents = new DocumentStore();
-        final OpenApiResult result = new OpenApiParser(documents, loader).parse(source);
+        final OpenApiResult result = new OpenApiParser(documents, loader).parse(CandidateSource.documentUri(state));
         return new ParsingResult<>(initModel(result), result);
     }
 

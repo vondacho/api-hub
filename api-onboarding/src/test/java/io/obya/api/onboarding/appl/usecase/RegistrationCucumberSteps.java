@@ -23,12 +23,14 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.Inline.unrecognisedContent;
 import static io.obya.api.onboarding.appl.usecase.UsecaseExamples.Sources.bodyOf;
 import static io.obya.api.onboarding.domain.model.DomainExamples.Specifications.specificationOf;
 import static io.obya.api.onboarding.domain.model.Violation.Code.DEPENDENCY_NOT_AVAILABLE;
 import static java.util.Objects.nonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -117,13 +119,23 @@ public class RegistrationCucumberSteps {
 
     @When("the candidate {uri} is submitted")
     public void theCandidateIsSubmitted(URI resource) throws Exception {
-        result = registrationService.submit(resource);
+        result = registrationService.submit(resource.toString());
+    }
+
+    @When("the content of candidate {uri} is submitted inline")
+    public void theContentOfCandidateIsSubmittedInline(URI resource) {
+        result = registrationService.submit(bodyOf(resource));
+    }
+
+    @When("an unrecognised content is submitted inline")
+    public void anUnrecognisedContentIsSubmittedInline() {
+        result = registrationService.submit(unrecognisedContent.get());
     }
 
     @When("the candidate {uri} is submitted on {localDate}")
     public void theCandidateIsSubmittedOn(URI resource, LocalDate when) throws Exception {
         when(auditTimestampProvider.get()).thenReturn(when.atStartOfDay());
-        result = registrationService.submit(resource);
+        result = registrationService.submit(resource.toString());
     }
 
     @When("scoring {specId} on {localDate}")
@@ -255,6 +267,12 @@ public class RegistrationCucumberSteps {
         assertThat(scorecard == null || scorecard.isUndefined())
                 .as("no scorecard should be assigned")
                 .isTrue();
+    }
+
+    @Then("the scorer received the specification content")
+    public void theScorerReceivedTheSpecificationContent() {
+        verify(scorer).score(anyString(), any(Contract.Type.class));
+        verify(scorer, never()).score(any(URI.class), any(Contract.Type.class));
     }
 
     // -------------------------------------------------------------------------

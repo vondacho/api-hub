@@ -1,0 +1,13 @@
+---
+title: Onboard a contract
+description: Submit an API contract by URL or as a file, and read back how onboarding judged it.
+---
+
+import OnboardingForm from '../../../../components/docs/OnboardingForm.astro';
+
+Point onboarding at a contract, or hand it the file directly. It runs the same
+[pipeline](/doc/onboarding/#the-pipeline) either way: the contract is parsed,
+validated, scored against the [design guidelines](/doc/design-guidelines/scoring/),
+and registered if it scores high enough.
+
+<OnboardingForm />

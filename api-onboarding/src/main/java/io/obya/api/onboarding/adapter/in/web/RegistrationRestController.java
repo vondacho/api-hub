@@ -2,6 +2,7 @@ package io.obya.api.onboarding.adapter.in.web;
 
 import io.obya.api.onboarding.adapter.in.web.model.CandidateProcessed;
 import io.obya.api.onboarding.adapter.in.web.model.OverlayApplied;
+import io.obya.api.onboarding.adapter.in.web.model.OverlayCandidate;
 import io.obya.api.onboarding.adapter.in.web.model.ScoreSummary;
 import io.obya.api.onboarding.appl.usecase.OnBoardingException;
 import io.obya.api.onboarding.adapter.in.web.model.Candidate;
@@ -52,7 +53,7 @@ public class RegistrationRestController implements RegistrationApi {
     }
 
     @Override
-    public ResponseEntity<OverlayApplied> overlay(SpecificationId id, Candidate overlay) {
+    public ResponseEntity<OverlayApplied> overlay(SpecificationId id, OverlayCandidate overlay) {
         Try<State> state =  registrationService.overlay(id, overlay.source());
         return state.map(s -> ResponseEntity.status(CREATED).body(new OverlayApplied(s.id().id())))
                 .getOrThrow(() -> new OnBoardingException(Violation.from(state.getExceptions())));

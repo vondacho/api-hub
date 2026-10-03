@@ -27,6 +27,27 @@ Feature: API specification onboarding
     And a scorecard is assigned with global score of 74
     And registered spec-123 named "notification" in "platform" at v1 1.0.0
 
+  Scenario: A valid OpenAPI candidate submitted as inline content is registered
+    When the content of candidate oas/valid_candidate.openapi.yaml is submitted inline
+    Then the onboarding succeeds
+    And the specification id is spec-123
+    And the contract is OPENAPI_V30
+    And the specification status is REGISTERED
+    And the scorer received the specification content
+    And registered spec-123 named "petstore" in "platform" at v1 1.0.0
+
+  Scenario: A valid AsyncAPI candidate submitted as inline content is registered
+    When the content of candidate aas/valid_candidate.asyncapi.yaml is submitted inline
+    Then the onboarding succeeds
+    And the contract is ASYNCAPI_V30
+    And the specification status is REGISTERED
+    And registered spec-123 named "notification" in "platform" at v1 1.0.0
+
+  Scenario: Inline content that is not a specification is not onboarded
+    When an unrecognised content is submitted inline
+    Then the onboarding fails
+    And a violation PROCESSING_FAILED is reported
+
   Scenario: An unexistent candidate is not onboarded
     When the candidate not_found.yaml is submitted
     Then the onboarding fails

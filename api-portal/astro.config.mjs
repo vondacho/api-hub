@@ -14,7 +14,13 @@ export default defineConfig({
       title: 'Documentation',
       prerender: true,
       sidebar: [
-        { label: 'Onboarding', link: '/doc/onboarding/' },
+        {
+          label: 'Onboarding',
+          items: [
+            { label: 'Overview', link: '/doc/onboarding/' },
+            { label: 'Onboard a contract', link: '/doc/onboarding/submit/' },
+          ],
+        },
         {
           label: 'Design guidelines',
           items: [

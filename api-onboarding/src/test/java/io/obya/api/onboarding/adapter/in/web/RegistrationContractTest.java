@@ -23,7 +23,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -59,8 +58,7 @@ class RegistrationContractTest {
     static void importSpecification() throws MicrocksException, IOException {
         microcksContainer.start();
         microcksContainer.importAsMainArtifact(
-                // FIXME: Examples should be secondary artefacts
-                new File("target/test-classes/api/registration/resolved.registration_v1.openapi.yaml"));
+                new File("target/classes/api/registration/registration_v1.openapi.yaml"));
     }
 
     @BeforeEach
@@ -75,7 +73,9 @@ class RegistrationContractTest {
             "scored_candidate", UsecaseExamples.States.candidateScored,
             "registered_candidate", UsecaseExamples.States.candidateRegistered,
             "rejected_candidate", UsecaseExamples.States.candidateRejected,
-            "not_found", UsecaseExamples.States.notFound
+            "not_found", UsecaseExamples.States.notFound,
+            "openapi: 3.0.3", UsecaseExamples.States.candidateRegisteredInline,
+            "not a specification", UsecaseExamples.States.notFound
         ));
         mockScoring(Map.of(
             "123", UsecaseExamples.States.candidateRegistered,
@@ -95,15 +95,24 @@ class RegistrationContractTest {
             "overlay-not-found", UsecaseExamples.States.notFound
         ));
 
+        microcksContainer.importAsSecondaryArtifact(
+                new File("target/test-classes/api/registration/10_registration_v1.examples.yaml"));
+        microcksContainer.importAsSecondaryArtifact(
+                new File("target/test-classes/api/registration/20_registration_score_v1.examples.yaml"));
+        microcksContainer.importAsSecondaryArtifact(
+                new File("target/test-classes/api/registration/30_registration_component_examples_v1.overlay.yaml"));
+        microcksContainer.importAsSecondaryArtifact(
+                new File("target/test-classes/api/registration/40_registration_overlay_examples_v1.overlay.yaml"));
+
         TestRequest testRequest = new TestRequest.Builder()
                 .serviceId("API Onboarding - Registration:v1")
                 .runnerType(TestRunnerType.OPEN_API_SCHEMA.name())
-                .testEndpoint("http://host.testcontainers.internal:" + port)
+                .testEndpoint("http://host.testcontainers.internal:" + port + "/api/v1")
                 .filteredOperations(List.of(
-                        "POST /api/v1/registrations",
-                        "PUT /api/v1/registrations/{id}/score",
-                        "PUT /api/v1/registrations/{id}/component",
-                        "POST /api/v1/registrations/{id}/overlay"
+                        "POST /registrations",
+                        "PUT /registrations/{id}/score",
+                        "PUT /registrations/{id}/component",
+                        "POST /registrations/{id}/overlay"
                 ))
                 .build();
 
@@ -112,20 +121,20 @@ class RegistrationContractTest {
         printLogs();
         print(testResult);
 
-        Assertions.assertSuccess(testResult, "POST /api/v1/registrations");
-        Assertions.assertSuccess(testResult, "PUT /api/v1/registrations/{id}/score");
-        Assertions.assertSuccess(testResult, "PUT /api/v1/registrations/{id}/component");
-        Assertions.assertSuccess(testResult, "POST /api/v1/registrations/{id}/overlay");
+        Assertions.assertSuccess(testResult, "POST /registrations");
+        Assertions.assertSuccess(testResult, "PUT /registrations/{id}/score");
+        Assertions.assertSuccess(testResult, "PUT /registrations/{id}/component");
+        Assertions.assertSuccess(testResult, "POST /registrations/{id}/overlay");
     }
 
     private void mockSubmission(Map<String, Supplier<Try<State>>> examples) {
         when(usecase.submit(any())).thenAnswer(i -> {
-            var uri = i.getArgument(0, URI.class);
+            var source = i.getArgument(0, String.class);
             for (var entry : examples.entrySet()) {
-                if (uri.getPath().contains(entry.getKey()))
+                if (source.contains(entry.getKey()))
                     return entry.getValue().get();
             }
-            throw new IllegalStateException("Unexpected value: " + uri);
+            throw new IllegalStateException("Unexpected value: " + source);
         });
     }
 

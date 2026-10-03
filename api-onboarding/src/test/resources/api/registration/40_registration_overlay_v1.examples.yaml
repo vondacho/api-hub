@@ -1,0 +1,75 @@
+apiVersion: mocks.microcks.io/v1alpha1
+kind: APIExamples
+metadata:
+  name: API Onboarding - Registration
+  version: v1
+operations:
+  POST /registrations/{id}/overlay:
+    valid-overlay:
+      request:
+        headers:
+          Content-Type: application/json
+          Accept: application/json
+        parameters:
+          id: 123
+        body: "{\"source\":\"file:///oai/valid.overlay.yaml\"}"
+      response:
+        status: 201
+        mediaType: application/json
+        body: "{\"id\":\"456\"}"
+    invalid-overlay-not-found:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        parameters:
+          id: overlay-not-found
+        body: "{\"source\":\"file:///not_found.yaml\"}"
+      response:
+        status: 422
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/validation-error\"\
+          ,\"status\":422,\"title\":\"Validation Error\",\"detail\":\"The request\
+          \ is invalid.\"}"
+    invalid-specification-not-found:
+      request:
+        headers:
+          Content-Type: application/json
+          Accept: application/problem+json
+        parameters:
+          id: not-found
+        body: "{\"source\":\"file:///oai/valid.overlay.yaml\"}"
+      response:
+        status: 422
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/validation-error\"\
+          ,\"status\":422,\"title\":\"Validation Error\",\"detail\":\"The request\
+          \ is invalid.\"}"
+    invalid-overlay-missing-uri:
+      request:
+        headers:
+          Accept: application/problem+json
+          Content-Type: application/json
+        parameters:
+          id: missing-uri
+        body: "{\"source\":\"\"}"
+      response:
+        status: 400
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/bad-request\",\"\
+          status\":400,\"title\":\"Validation Error\",\"detail\":\"The request is\
+          \ invalid.\"}"
+    invalid-overlay-malformed-uri:
+      request:
+        headers:
+          Content-Type: application/json
+          Accept: application/problem+json
+        parameters:
+          id: malformed-uri
+        body: "{\"source\":\"malformed_uri\"}"
+      response:
+        status: 400
+        mediaType: application/problem+json
+        body: "{\"type\":\"https://problems-registry.smartbear.com/bad-request\",\"\
+          status\":400,\"title\":\"Validation Error\",\"detail\":\"The request is\
+          \ invalid.\"}"

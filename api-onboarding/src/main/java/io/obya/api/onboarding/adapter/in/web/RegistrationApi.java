@@ -3,6 +3,7 @@ package io.obya.api.onboarding.adapter.in.web;
 import io.obya.api.onboarding.adapter.in.web.model.Candidate;
 import io.obya.api.onboarding.adapter.in.web.model.CandidateProcessed;
 import io.obya.api.onboarding.adapter.in.web.model.OverlayApplied;
+import io.obya.api.onboarding.adapter.in.web.model.OverlayCandidate;
 import io.obya.api.onboarding.domain.model.Component;
 import io.obya.api.onboarding.adapter.in.web.model.ScoreSummary;
 import io.obya.api.onboarding.domain.model.SpecificationId;
@@ -80,5 +81,5 @@ public interface RegistrationApi {
     ResponseEntity<OverlayApplied> overlay(
             @Parameter(description = "ID of the specification receiving the overlay", required = true, schema = @Schema(type = "string"))
             @PathVariable(name = "id") SpecificationId id,
-            @RequestBody Candidate overlay);
+            @RequestBody OverlayCandidate overlay);
 }

@@ -1,0 +1,549 @@
+---
+/*
+ * The onboarding screen: a contract is given either as a URL or as a dropped
+ * file, submitted, and the essentials of onboarding's answer are rendered.
+ *
+ * The page around it is prerendered, so everything interactive happens in the
+ * script below. It posts to the portal's own /api/onboarding route, never to
+ * api-onboarding directly — see src/pages/api/onboarding.ts.
+ */
+---
+
+<onboarding-form>
+	<form class="onboarding" novalidate>
+		<fieldset class="modes">
+			<legend class="sr-only">How to provide the specification</legend>
+			<label class="mode">
+				<input type="radio" name="mode" value="url" checked />
+				<span>From a URL</span>
+			</label>
+			<label class="mode">
+				<input type="radio" name="mode" value="file" />
+				<span>Upload a file</span>
+			</label>
+		</fieldset>
+
+		<div data-panel="url">
+			<label for="onboarding-url" class="field-label">Specification URL</label>
+			<input
+				id="onboarding-url"
+				name="url"
+				type="url"
+				inputmode="url"
+				autocomplete="off"
+				placeholder="https://example.com/specs/petstore.openapi.yaml"
+				class="text-input"
+			/>
+			<p class="hint">api-onboarding downloads the document from this address, so it must be reachable from the cluster.</p>
+		</div>
+
+		<div data-panel="file" hidden>
+			<label class="dropzone" data-dropzone>
+				<input
+					name="file"
+					type="file"
+					accept=".yaml,.yml,.json,.graphql,.graphqls,.wsdl,.xml"
+					class="sr-only"
+				/>
+				<strong>Drop a specification here</strong>
+				<span>or click to choose a file — OpenAPI, AsyncAPI, GraphQL SDL or WSDL</span>
+				<span class="file-name" data-file-name></span>
+			</label>
+		</div>
+
+		<p class="form-error" role="alert" data-form-error hidden></p>
+
+		<button type="submit" class="submit" data-submit>Onboard</button>
+	</form>
+
+	<section class="result" aria-live="polite" data-result hidden></section>
+</onboarding-form>
+
+<script>
+	import type { SubmissionOutcome, CandidateProcessed, ProblemDetails } from '../../lib/onboarding';
+	import { contractLabel } from '../../lib/registry';
+
+	const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
+	/** Builds an element; text only ever goes in through textContent. */
+	function el<K extends keyof HTMLElementTagNameMap>(
+		tag: K,
+		attrs: Record<string, string> = {},
+		...children: (Node | string | null | undefined)[]
+	): HTMLElementTagNameMap[K] {
+		const node = document.createElement(tag);
+		for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+		for (const child of children) {
+			if (child == null) continue;
+			node.append(typeof child === 'string' ? document.createTextNode(child) : child);
+		}
+		return node;
+	}
+
+	function facts(entries: [string, string | undefined][]): HTMLElement {
+		const list = el('dl', { class: 'facts' });
+		for (const [label, value] of entries) {
+			if (!value) continue;
+			list.append(el('div', {}, el('dt', {}, label), el('dd', {}, value)));
+		}
+		return list;
+	}
+
+	function banner(tone: 'success' | 'notice' | 'failure', title: string, detail: string): HTMLElement {
+		return el('div', { class: `banner banner--${tone}` }, el('strong', {}, title), el('p', {}, detail));
+	}
+
+	function renderProcessed(status: 200 | 201, body: CandidateProcessed): Node[] {
+		const registered = status === 201;
+		const nodes: Node[] = [
+			registered
+				? banner('success', 'Registered', 'The contract was validated, scored and registered.')
+				: banner(
+						'notice',
+						'Validated, not registered',
+						'The contract is valid but could not be registered — see the warnings below.',
+					),
+		];
+
+		nodes.push(el('h3', {}, body.info.title));
+		if (body.info.description) nodes.push(el('p', { class: 'description' }, body.info.description));
+
+		nodes.push(
+			facts([
+				['Status', body.status],
+				['Identifier', body.id],
+				['Contract', contractLabel(body.contract)],
+				['Version', body.info.version],
+				['Name', body.metadata?.name],
+				['Revision', body.metadata?.revision],
+				['Product', body.metadata?.productName],
+				['Bundle', body.metadata?.bundleName],
+				[
+					'Component',
+					[body.metadata?.componentName, body.metadata?.componentRevision].filter(Boolean).join(' · ') ||
+						undefined,
+				],
+				['Source', body.source],
+			]),
+		);
+
+		const scorecard = body.scorecard;
+		if (scorecard) {
+			nodes.push(
+				el(
+					'div',
+					{ class: 'score' },
+					el('span', { class: 'grade' }, scorecard.grade),
+					el('span', {}, `Overall score ${scorecard.score} / 100`),
+				),
+			);
+			if (scorecard.dimensions?.length) {
+				const rows = scorecard.dimensions.map((d) =>
+					el(
+						'tr',
+						{},
+						el('td', {}, el('code', {}, d.name)),
+						el('td', {}, d.intent),
+						el('td', { class: 'num' }, String(d.score)),
+						el('td', { class: 'num' }, d.grade),
+					),
+				);
+				nodes.push(
+					el(
+						'table',
+						{},
+						el(
+							'thead',
+							{},
+							el('tr', {}, el('th', {}, 'Dimension'), el('th', {}, 'Intent'), el('th', {}, 'Score'), el('th', {}, 'Grade')),
+						),
+						el('tbody', {}, ...rows),
+					),
+				);
+			}
+		}
+
+		const violations = body.violations ?? [];
+		if (violations.length) {
+			nodes.push(el('h4', {}, `${violations.length} ${violations.length === 1 ? 'finding' : 'findings'}`));
+			nodes.push(
+				el(
+					'ul',
+					{ class: 'violations' },
+					...violations.map((v) =>
+						el(
+							'li',
+							{},
+							el('span', { class: `severity severity--${v.severity.toLowerCase()}` }, v.severity),
+							el('code', {}, v.code),
+							el('span', {}, v.detail),
+						),
+					),
+				),
+			);
+		}
+
+		if (registered && body.metadata?.name) {
+			nodes.push(
+				el(
+					'p',
+					{},
+					el('a', { href: `/catalog?q=${encodeURIComponent(body.metadata.name)}` }, 'Find it in the catalog →'),
+				),
+			);
+		}
+		return nodes;
+	}
+
+	function renderProblem(status: number, body: ProblemDetails): Node[] {
+		const nodes: Node[] = [
+			banner('failure', `Rejected — ${body.title} (${status})`, body.detail ?? 'Onboarding refused the contract.'),
+		];
+		const errors = (body.errors ?? []) as { detail?: string; pointer?: string; severity?: string }[];
+		if (errors.length) {
+			nodes.push(
+				el(
+					'ul',
+					{ class: 'violations' },
+					...errors.map((e) =>
+						el(
+							'li',
+							{},
+							e.severity
+								? el('span', { class: `severity severity--${e.severity.toLowerCase()}` }, e.severity)
+								: null,
+							e.pointer ? el('code', {}, e.pointer) : null,
+							el('span', {}, e.detail ?? ''),
+						),
+					),
+				),
+			);
+		}
+		return nodes;
+	}
+
+	class OnboardingForm extends HTMLElement {
+		private file: File | undefined;
+
+		connectedCallback() {
+			const form = this.querySelector('form')!;
+			const result = this.querySelector<HTMLElement>('[data-result]')!;
+			const error = this.querySelector<HTMLElement>('[data-form-error]')!;
+			const submit = this.querySelector<HTMLButtonElement>('[data-submit]')!;
+			const dropzone = this.querySelector<HTMLElement>('[data-dropzone]')!;
+			const fileInput = this.querySelector<HTMLInputElement>('input[type=file]')!;
+			const fileName = this.querySelector<HTMLElement>('[data-file-name]')!;
+
+			const mode = () => (new FormData(form).get('mode') as 'url' | 'file') ?? 'url';
+			const showError = (message?: string) => {
+				error.textContent = message ?? '';
+				error.hidden = !message;
+			};
+
+			form.addEventListener('change', (event) => {
+				if ((event.target as HTMLInputElement).name !== 'mode') return;
+				for (const panel of this.querySelectorAll<HTMLElement>('[data-panel]')) {
+					panel.hidden = panel.dataset.panel !== mode();
+				}
+				showError();
+			});
+
+			const choose = (file: File | undefined) => {
+				this.file = file;
+				fileName.textContent = file ? `${file.name} · ${Math.ceil(file.size / 1024)} KB` : '';
+				showError();
+			};
+			fileInput.addEventListener('change', () => choose(fileInput.files?.[0]));
+			dropzone.addEventListener('dragover', (event) => {
+				event.preventDefault();
+				dropzone.classList.add('is-over');
+			});
+			dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-over'));
+			dropzone.addEventListener('drop', (event) => {
+				event.preventDefault();
+				dropzone.classList.remove('is-over');
+				choose(event.dataTransfer?.files[0]);
+			});
+
+			form.addEventListener('submit', async (event) => {
+				event.preventDefault();
+				showError();
+
+				let source: string;
+				if (mode() === 'url') {
+					source = String(new FormData(form).get('url') ?? '').trim();
+					if (!/^https?:\/\/\S+$/i.test(source)) return showError('Enter an http(s) URL.');
+				} else {
+					if (!this.file) return showError('Choose or drop a specification file first.');
+					if (this.file.size > MAX_FILE_BYTES) return showError('The file exceeds 5 MB.');
+					source = await this.file.text();
+					if (!source.trim()) return showError('The file is empty.');
+				}
+
+				submit.disabled = true;
+				submit.textContent = 'Onboarding…';
+				result.hidden = false;
+				result.replaceChildren(el('p', { class: 'pending' }, 'Parsing, validating and scoring the contract…'));
+
+				try {
+					const response = await fetch('/api/onboarding', {
+						method: 'POST',
+						headers: { 'content-type': 'application/json' },
+						body: JSON.stringify({ source }),
+					});
+					const payload = await response.json().catch(() => undefined);
+					if (!response.ok) {
+						result.replaceChildren(
+							banner('failure', 'Not submitted', payload?.message ?? `The portal answered ${response.status}.`),
+						);
+						return;
+					}
+					const outcome = payload as SubmissionOutcome;
+					result.replaceChildren(
+						...(outcome.kind === 'processed'
+							? renderProcessed(outcome.status, outcome.body)
+							: outcome.kind === 'problem'
+								? renderProblem(outcome.status, outcome.body)
+								: [banner('failure', 'Onboarding is unavailable', outcome.message)]),
+					);
+				} catch (failure) {
+					result.replaceChildren(
+						banner('failure', 'Not submitted', failure instanceof Error ? failure.message : String(failure)),
+					);
+				} finally {
+					submit.disabled = false;
+					submit.textContent = 'Onboard';
+				}
+			});
+		}
+	}
+
+	customElements.define('onboarding-form', OnboardingForm);
+</script>
+
+<style>
+	.onboarding {
+		display: grid;
+		gap: 1rem;
+		padding: 1.25rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 0.75rem;
+		background: var(--sl-color-gray-7, var(--sl-color-black));
+	}
+
+	.modes {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		border: 0;
+		padding: 0;
+		margin: 0;
+	}
+
+	.mode {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.35rem 0.9rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 999px;
+		cursor: pointer;
+		font-size: var(--sl-text-sm);
+	}
+
+	.mode:has(input:checked) {
+		border-color: var(--sl-color-accent);
+		background: var(--sl-color-accent-low);
+	}
+
+	.field-label {
+		display: block;
+		font-weight: 600;
+		margin-block-end: 0.35rem;
+	}
+
+	.text-input {
+		width: 100%;
+		padding: 0.6rem 0.8rem;
+		border: 1px solid var(--sl-color-gray-4);
+		border-radius: 0.5rem;
+		background: var(--sl-color-bg);
+		color: var(--sl-color-text);
+		font: inherit;
+	}
+
+	.text-input:focus-visible,
+	.dropzone:focus-within {
+		outline: 2px solid var(--sl-color-accent);
+		outline-offset: 2px;
+	}
+
+	.hint {
+		margin-block: 0.4rem 0;
+		font-size: var(--sl-text-xs);
+		color: var(--sl-color-gray-3);
+	}
+
+	.dropzone {
+		display: grid;
+		justify-items: center;
+		gap: 0.25rem;
+		padding: 2rem 1rem;
+		border: 2px dashed var(--sl-color-gray-4);
+		border-radius: 0.75rem;
+		text-align: center;
+		cursor: pointer;
+		transition: border-color 120ms, background-color 120ms;
+	}
+
+	.dropzone span {
+		font-size: var(--sl-text-sm);
+		color: var(--sl-color-gray-3);
+	}
+
+	.dropzone.is-over {
+		border-color: var(--sl-color-accent);
+		background: var(--sl-color-accent-low);
+	}
+
+	.dropzone .file-name {
+		margin-block-start: 0.4rem;
+		font-family: var(--sl-font-mono);
+		color: var(--sl-color-text);
+	}
+
+	.form-error {
+		margin: 0;
+		color: var(--sl-color-red);
+		font-size: var(--sl-text-sm);
+	}
+
+	.submit {
+		justify-self: start;
+		padding: 0.55rem 1.4rem;
+		border: 0;
+		border-radius: 999px;
+		background: var(--sl-color-accent);
+		color: var(--sl-color-black);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.submit:disabled {
+		opacity: 0.6;
+		cursor: progress;
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+
+	/* The result is built by the script, so its styles must not be scoped. */
+	.result {
+		margin-block-start: 1.5rem;
+	}
+
+	.result :global(.banner) {
+		padding: 0.75rem 1rem;
+		border-inline-start: 3px solid;
+		border-radius: 0 0.5rem 0.5rem 0;
+		background: var(--sl-color-gray-6);
+	}
+
+	.result :global(.banner p) {
+		margin: 0.25rem 0 0;
+	}
+
+	.result :global(.banner--success) {
+		border-color: var(--sl-color-green);
+	}
+
+	.result :global(.banner--notice) {
+		border-color: var(--sl-color-orange);
+	}
+
+	.result :global(.banner--failure) {
+		border-color: var(--sl-color-red);
+	}
+
+	.result :global(.description) {
+		color: var(--sl-color-gray-3);
+	}
+
+	.result :global(.facts) {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+		gap: 0.75rem 1.5rem;
+	}
+
+	.result :global(.facts dt) {
+		font-size: var(--sl-text-xs);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--sl-color-gray-3);
+	}
+
+	.result :global(.facts dd) {
+		margin: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.result :global(.score) {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.result :global(.grade) {
+		font-size: var(--sl-text-2xl);
+		font-weight: 700;
+		color: var(--sl-color-accent-high);
+	}
+
+	.result :global(table) {
+		display: table;
+		width: 100%;
+	}
+
+	.result :global(.num) {
+		text-align: end;
+		white-space: nowrap;
+	}
+
+	.result :global(.violations) {
+		padding-inline-start: 0;
+		list-style: none;
+	}
+
+	.result :global(.violations li) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+
+	.result :global(.severity) {
+		font-size: var(--sl-text-xs);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+
+	.result :global(.severity--major) {
+		color: var(--sl-color-red);
+	}
+
+	.result :global(.severity--minor) {
+		color: var(--sl-color-orange);
+	}
+
+	.result :global(.pending) {
+		color: var(--sl-color-gray-3);
+	}
+</style>

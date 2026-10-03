@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 public class State {
     SpecificationId id;
     URI source;
+    String content;
     Info info;
     Contract contract;
     Metadata metadata;

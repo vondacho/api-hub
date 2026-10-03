@@ -14,6 +14,7 @@
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
     "astro": "astro",
+    "generate:onboarding-types": "openapi-typescript ../api-onboarding/src/main/resources/api/registration/registration_v1.openapi.yaml -o src/types/onboarding.d.ts",
     "generate:registry-types": "openapi-typescript ../api-onboarding/src/main/resources/api/strapi/specification_v1.openapi.json -o src/types/registry.d.ts"
   },
   "dependencies": {

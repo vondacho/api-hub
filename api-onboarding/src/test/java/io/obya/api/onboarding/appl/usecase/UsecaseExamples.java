@@ -19,6 +19,7 @@ public interface UsecaseExamples {
     interface Sources {
         Supplier<URI> unreadableSource = () -> URI.create("file:///nonexistent/does_not_exist.openapi.yaml");
         Supplier<URI> unsupportedSchemeSource = () -> URI.create("ftp://example.com/spec.openapi.yaml");
+        Supplier<URI> remoteSource = () -> URI.create("https://example.com/specs/petstore.openapi.yaml");
 
         /** Addresses an example document on the classpath, so it resolves on any machine. */
         static URI classpathOf(String filename) {
@@ -51,6 +52,14 @@ public interface UsecaseExamples {
         /** Overlay example documents. Read with a {@code ClasspathResourceReader}. */
         interface Oai {
             Supplier<URI> validOverlay = () -> Sources.classpathOf("oai/valid.overlay.yaml");
+        }
+
+        /** Specification documents submitted as text rather than by location. */
+        interface Inline {
+            Supplier<String> validOasCandidate = () -> bodyOf(Oas.validCandidate.get());
+            Supplier<String> validAasCandidate = () -> bodyOf(Aas.validCandidate.get());
+            Supplier<String> unrecognisedContent = () -> "this is not a specification";
+            Supplier<String> relativeReference = () -> "malformed_uri";
         }
 
         static String bodyOf(URI uri) {
@@ -130,6 +139,10 @@ public interface UsecaseExamples {
         Supplier<Try<State>> candidateRegistered = () -> candidateScored.get().map(s -> s
                 .id(DomainExamples.Specifications.id123.get())
                 .status(Status.REGISTERED));
+
+        Supplier<Try<State>> candidateRegisteredInline = () -> candidateRegistered.get().map(s -> s
+                .source(null)
+                .content(UsecaseExamples.Sources.Inline.validOasCandidate.get()));
 
         Supplier<Try<State>> candidateImplemented = () -> candidateRegistered.get().map(s -> s
                 .metadata(new Metadata(

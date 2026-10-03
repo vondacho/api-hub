@@ -7,12 +7,11 @@ import io.obya.api.onboarding.domain.model.Contract;
 import io.obya.api.onboarding.domain.model.Info;
 import io.obya.api.onboarding.domain.model.Metadata;
 
-import java.net.URI;
 import java.util.List;
 
 public record CandidateProcessed(
         String id,
-        URI source,
+        String source,
         Info info,
         Metadata metadata,
         Contract.Version contract,
@@ -23,7 +22,7 @@ public record CandidateProcessed(
     public static CandidateProcessed from(State state, List<Violation> violations) {
         return new CandidateProcessed(
                 state.status() == Status.REGISTERED ? state.id().id() : null,
-                state.source(),
+                state.source() == null ? null : state.source().toString(),
                 state.info(),
                 state.metadata(),
                 state.contract().version(),

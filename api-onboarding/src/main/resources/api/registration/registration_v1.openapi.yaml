@@ -137,7 +137,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Candidate'
+              $ref: '#/components/schemas/OverlayCandidate'
       responses:
         "201":
           description: Ok — existing specification has been overlaid successfully.
@@ -165,8 +165,21 @@ components:
       properties:
         source:
           type: string
+          minLength: 1
+          description: >-
+            Either an absolute URI to fetch the specification from, or the specification
+            document itself. A single-line absolute URI is read as a location; anything
+            else is read as the document.
+      required:
+        - source
+
+    OverlayCandidate:
+      type: object
+      properties:
+        source:
+          type: string
           format: uri
-          description: "URI pointing to the specContent"
+          description: "URI pointing to the overlay document"
       required:
         - source
 
@@ -179,8 +192,7 @@ components:
           description: "Unique identifier for the candidate"
         source:
           type: string
-          format: uri
-          description: "URI pointing to the specContent"
+          description: "Location the specification was fetched from; absent when it was submitted inline"
         info:
           $ref: '#/components/schemas/Info'
         metadata:
@@ -197,7 +209,6 @@ components:
             $ref: '#/components/schemas/Violation'
           description: "Detailed violations encountered during processing"
       required:
-        - source
         - info
         - contract
         - status
